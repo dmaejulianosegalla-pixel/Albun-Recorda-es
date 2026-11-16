@@ -40,82 +40,34 @@
       inset: 0;
     }
 
-    /* Correção da barra de status do Android (Safe Area Top) */
     header {
       padding-top: env(safe-area-inset-top, 0px);
       height: calc(3.5rem + env(safe-area-inset-top, 0px));
     }
 
     /* Texturas de Papel */
-    .paper-cream {
-      background-color: #fdfbf7;
-      background-image: radial-gradient(#e6dfd3 0.6px, transparent 0.6px);
-      background-size: 16px 16px;
-    }
-    .paper-kraft {
-      background-color: #d6b892;
-      background-image: 
-        radial-gradient(rgba(120, 80, 40, 0.12) 1px, transparent 0),
-        radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 0);
-      background-size: 20px 20px;
-      background-position: 0 0, 10px 10px;
-    }
-    .paper-dots {
-      background-color: #ffffff;
-      background-image: radial-gradient(#cbd5e1 1.3px, transparent 1.3px);
-      background-size: 22px 22px;
-    }
-    .paper-lined {
-      background-color: #fffef9;
-      background-image: 
-        linear-gradient(90deg, transparent 58px, #fca5a5 58px, #fca5a5 60px, transparent 60px),
-        linear-gradient(#e2e8f0 1px, transparent 1px);
-      background-size: 100% 32px;
-    }
-    .paper-blush {
-      background-color: #fdf2f4;
-      background-image: radial-gradient(#f5d0d6 0.8px, transparent 0.8px);
-      background-size: 18px 18px;
-    }
-    .paper-sage {
-      background-color: #f2f6f3;
-      background-image: radial-gradient(#cfddd3 0.8px, transparent 0.8px);
-      background-size: 18px 18px;
-    }
-    .paper-cover {
-      background-color: #3f2e26;
-      background-image: 
-        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 0),
-        linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.2) 100%);
-      background-size: 14px 14px, 100% 100%;
-    }
+    .paper-cream { background-color: #fdfbf7; background-image: radial-gradient(#e6dfd3 0.6px, transparent 0.6px); background-size: 16px 16px; }
+    .paper-kraft { background-color: #d6b892; background-image: radial-gradient(rgba(120, 80, 40, 0.12) 1px, transparent 0), radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 0); background-size: 20px 20px; background-position: 0 0, 10px 10px; }
+    .paper-dots { background-color: #ffffff; background-image: radial-gradient(#cbd5e1 1.3px, transparent 1.3px); background-size: 22px 22px; }
+    .paper-lined { background-color: #fffef9; background-image: linear-gradient(90deg, transparent 58px, #fca5a5 58px, #fca5a5 60px, transparent 60px), linear-gradient(#e2e8f0 1px, transparent 1px); background-size: 100% 32px; }
+    .paper-blush { background-color: #fdf2f4; background-image: radial-gradient(#f5d0d6 0.8px, transparent 0.8px); background-size: 18px 18px; }
+    .paper-sage { background-color: #f2f6f3; background-image: radial-gradient(#cfddd3 0.8px, transparent 0.8px); background-size: 18px 18px; }
+    .paper-cover { background-color: #3f2e26; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 0), linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.2) 100%); background-size: 14px 14px, 100% 100%; }
 
-    .sheet-shadow {
-      box-shadow: 
-        0 1px 3px rgba(0,0,0,0.08),
-        0 12px 32px -4px rgba(28, 25, 23, 0.18),
-        inset 0 0 40px rgba(0,0,0,0.02);
-    }
+    .sheet-shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 12px 32px -4px rgba(28, 25, 23, 0.18), inset 0 0 40px rgba(0,0,0,0.02); }
 
     .frame-classic { background: #ffffff; padding: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     .frame-polaroid { background: #ffffff; padding: 12px 12px 42px 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.18); }
     .frame-rounded { border-radius: 16px; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,0.16); }
     .frame-taped, .frame-taped-pink, .frame-taped-blue { background: #ffffff; padding: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.14); position: relative; }
-    .frame-taped::before, .frame-taped::after,
-    .frame-taped-pink::before, .frame-taped-pink::after,
-    .frame-taped-blue::before, .frame-taped-blue::after {
-      content: ''; position: absolute; width: 56px; height: 18px; backdrop-filter: blur(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.1); z-index: 5;
-    }
+    .frame-taped::before, .frame-taped::after, .frame-taped-pink::before, .frame-taped-pink::after, .frame-taped-blue::before, .frame-taped-blue::after { content: ''; position: absolute; width: 56px; height: 18px; backdrop-filter: blur(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.1); z-index: 5; }
     .frame-taped::before, .frame-taped::after { background: rgba(253, 224, 71, 0.72); }
     .frame-taped-pink::before, .frame-taped-pink::after { background: rgba(244, 114, 182, 0.65); }
     .frame-taped-blue::before, .frame-taped-blue::after { background: rgba(96, 165, 250, 0.65); }
     .frame-taped::before, .frame-taped-pink::before, .frame-taped-blue::before { top: -8px; left: -14px; transform: rotate(-32deg); }
     .frame-taped::after, .frame-taped-pink::after, .frame-taped-blue::after { bottom: -8px; right: -14px; transform: rotate(-32deg); }
-
     .frame-clipped { background: #ffffff; padding: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: relative; }
-    .frame-clipped::before {
-      content: ''; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 14px; height: 32px; border: 3px solid #78716c; border-radius: 8px; z-index: 10; box-shadow: 1px 2px 3px rgba(0,0,0,0.2);
-    }
+    .frame-clipped::before { content: ''; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 14px; height: 32px; border: 3px solid #78716c; border-radius: 8px; z-index: 10; box-shadow: 1px 2px 3px rgba(0,0,0,0.2); }
 
     .filter-none { filter: none; }
     .filter-vintage { filter: sepia(0.28) contrast(1.06) brightness(1.03) saturate(0.85); }
@@ -126,15 +78,9 @@
 
     .album-item { position: absolute; touch-action: none; }
     .album-item.selected { outline: 2.5px dashed #d97706; outline-offset: 4px; }
-    .handle-move {
-      position: absolute; top: -40px; left: 0; background: #d97706; color: #ffffff; padding: 5px 11px; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: grab; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.25); z-index: 35; white-space: nowrap; touch-action: none;
-    }
-    .handle-resize {
-      position: absolute; right: -18px; bottom: -18px; width: 36px; height: 36px; background: #d97706; color: #ffffff; border: 3px solid #fff; border-radius: 50%; cursor: nwse-resize; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0,0,0,0.3); z-index: 35; touch-action: none;
-    }
-    .handle-rotate {
-      position: absolute; top: -40px; right: 0; width: 32px; height: 32px; background: #ffffff; color: #d97706; border: 2px solid #d97706; border-radius: 50%; cursor: grab; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25); z-index: 35; touch-action: none;
-    }
+    .handle-move { position: absolute; top: -40px; left: 0; background: #d97706; color: #ffffff; padding: 5px 11px; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: grab; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.25); z-index: 35; white-space: nowrap; touch-action: none; }
+    .handle-resize { position: absolute; right: -18px; bottom: -18px; width: 36px; height: 36px; background: #d97706; color: #ffffff; border: 3px solid #fff; border-radius: 50%; cursor: nwse-resize; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0,0,0,0.3); z-index: 35; touch-action: none; }
+    .handle-rotate { position: absolute; top: -40px; right: 0; width: 32px; height: 32px; background: #ffffff; color: #d97706; border: 2px solid #d97706; border-radius: 50%; cursor: grab; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25); z-index: 35; touch-action: none; }
 
     .snap-guide-v { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; border-left: 1.5px dashed #d97706; pointer-events: none; z-index: 40; }
     .snap-guide-h { position: absolute; left: 0; right: 0; top: 50%; height: 1px; border-top: 1.5px dashed #d97706; pointer-events: none; z-index: 40; }
@@ -149,82 +95,119 @@
 </head>
 <body class="flex flex-col text-stone-800">
 
-  <!-- Barra Superior (Header) com SafeArea Top -->
-  <header class="bg-white border-b border-stone-200 px-2 sm:px-5 flex items-center justify-between shrink-0 z-30 shadow-xs">
+  <!-- Barra Superior (Header) Limpa com 3 Pontinhos -->
+  <header class="bg-white border-b border-stone-200 px-3 sm:px-5 flex items-center justify-between shrink-0 z-40 shadow-xs">
     <div class="flex items-center gap-2 min-w-0">
       <div class="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-sm shrink-0">
         <i data-lucide="book-heart" class="w-4 h-4"></i>
       </div>
       <div class="min-w-0">
         <input id="albumTitleInput" type="text" value="Meu Álbum de Recordações"
-          class="font-bold text-stone-800 text-xs sm:text-base bg-transparent border-b border-transparent focus:border-amber-600 focus:outline-none px-1 rounded transition w-28 sm:w-56 truncate" />
+          class="font-bold text-stone-800 text-xs sm:text-base bg-transparent border-b border-transparent focus:border-amber-600 focus:outline-none px-1 rounded transition w-36 sm:w-56 truncate" />
         <p id="saveStatus" class="text-[10px] text-stone-400 px-1 truncate">Salvo</p>
       </div>
     </div>
 
-    <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
+    <!-- Ações e Menu de Três Pontinhos -->
+    <div class="flex items-center gap-2 shrink-0">
       <div class="flex items-center bg-stone-100 rounded-xl p-0.5 border border-stone-200">
-        <button onclick="undo()" id="undoBtn" disabled class="p-1.5 rounded-lg text-stone-600 hover:bg-white disabled:opacity-30 transition"><i data-lucide="undo-2" class="w-4 h-4"></i></button>
-        <button onclick="redo()" id="redoBtn" disabled class="p-1.5 rounded-lg text-stone-600 hover:bg-white disabled:opacity-30 transition"><i data-lucide="redo-2" class="w-4 h-4"></i></button>
+        <button onclick="undo()" id="undoBtn" disabled title="Desfazer" class="p-1.5 rounded-lg text-stone-600 hover:bg-white disabled:opacity-30 transition"><i data-lucide="undo-2" class="w-4 h-4"></i></button>
+        <button onclick="redo()" id="redoBtn" disabled title="Refazer" class="p-1.5 rounded-lg text-stone-600 hover:bg-white disabled:opacity-30 transition"><i data-lucide="redo-2" class="w-4 h-4"></i></button>
       </div>
 
-      <button onclick="shareCurrentPage()" class="p-2 sm:px-3 sm:py-1.5 rounded-xl text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 flex items-center gap-1 transition">
-        <i data-lucide="share-2" class="w-4 h-4"></i>
-        <span class="hidden md:inline">Compartilhar</span>
-      </button>
+      <!-- Botão de Opções (Três Pontinhos) -->
+      <div class="relative">
+        <button onclick="toggleMenuDropdown(event)" title="Mais Opções" class="p-2 rounded-xl bg-stone-100 hover:bg-amber-50 text-stone-700 border border-stone-200 flex items-center justify-center transition">
+          <i data-lucide="more-vertical" class="w-5 h-5 text-amber-700"></i>
+        </button>
 
-      <button onclick="exportProjectJSON()" class="p-2 rounded-xl text-xs font-medium text-stone-600 hover:bg-stone-100 border border-stone-200 flex items-center transition"><i data-lucide="download" class="w-4 h-4"></i></button>
-
-      <label class="p-2 rounded-xl text-xs font-medium text-stone-600 hover:bg-stone-100 border border-stone-200 flex items-center cursor-pointer transition">
-        <i data-lucide="upload" class="w-4 h-4"></i>
-        <input type="file" accept=".json" onchange="importProjectJSON(event)" class="hidden" />
-      </label>
-
-      <button onclick="openResetModal()" class="p-2 rounded-xl text-xs font-medium text-stone-600 hover:bg-red-50 hover:text-red-600 border border-stone-200 flex items-center transition"><i data-lucide="file-plus" class="w-4 h-4"></i></button>
-
-      <button onclick="exportToPDF()" id="exportPdfBtn" class="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white shadow-sm flex items-center gap-1 transition">
-        <i data-lucide="file-down" class="w-4 h-4"></i>
-        <span>PDF</span>
-      </button>
+        <!-- Dropdown Menu -->
+        <div id="headerMenuDropdown" class="hidden absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-stone-200 py-2 z-50 flex flex-col">
+          <button onclick="shareCurrentPage(); closeMenuDropdown();" class="w-full text-left px-4 py-2.5 text-xs font-medium text-stone-700 hover:bg-amber-50 flex items-center gap-2.5 transition">
+            <i data-lucide="share-2" class="w-4 h-4 text-amber-600"></i> Compartilhar Página
+          </button>
+          <button onclick="exportToPDF(); closeMenuDropdown();" class="w-full text-left px-4 py-2.5 text-xs font-medium text-stone-700 hover:bg-amber-50 flex items-center gap-2.5 transition">
+            <i data-lucide="file-down" class="w-4 h-4 text-amber-600"></i> Criar PDF do Álbum
+          </button>
+          <button onclick="exportProjectJSON(); closeMenuDropdown();" class="w-full text-left px-4 py-2.5 text-xs font-medium text-stone-700 hover:bg-amber-50 flex items-center gap-2.5 transition">
+            <i data-lucide="download" class="w-4 h-4 text-amber-600"></i> Exportar Backup (.json)
+          </button>
+          <label class="w-full text-left px-4 py-2.5 text-xs font-medium text-stone-700 hover:bg-amber-50 flex items-center gap-2.5 cursor-pointer transition">
+            <i data-lucide="upload" class="w-4 h-4 text-amber-600"></i> Importar Backup (.json)
+            <input type="file" accept=".json" onchange="importProjectJSON(event); closeMenuDropdown();" class="hidden" />
+          </label>
+          <div class="border-t border-stone-100 my-1"></div>
+          <button onclick="openResetModal(); closeMenuDropdown();" class="w-full text-left px-4 py-2.5 text-xs font-medium text-red-600 hover:bg-red-50 flex items-center gap-2.5 transition">
+            <i data-lucide="file-plus" class="w-4 h-4"></i> Novo Álbum
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
   <!-- Área Principal -->
   <div class="flex-1 flex overflow-hidden relative w-full">
-    <aside class="w-14 sm:w-20 bg-white border-r border-stone-200 flex flex-col items-center py-2 gap-1.5 shrink-0 z-20 overflow-y-auto">
-      <label class="w-12 sm:w-16 py-1.5 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 cursor-pointer transition">
+    <!-- Barra Lateral Esquerda (Com os itens de edição e navegação de páginas integrados) -->
+    <aside class="w-16 sm:w-20 bg-white border-r border-stone-200 flex flex-col items-center py-2 gap-1 shrink-0 z-30 overflow-y-auto">
+      
+      <!-- Ferramentas de Edição -->
+      <label class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 cursor-pointer transition">
         <div class="w-8 h-8 rounded-lg bg-amber-100/80 text-amber-700 flex items-center justify-center"><i data-lucide="image-plus" class="w-4 h-4"></i></div>
-        <span class="text-[10px] font-medium">Fotos</span>
+        <span class="text-[9px] font-medium">Fotos</span>
         <input type="file" accept="image/*" multiple onchange="handlePhotoUpload(event)" class="hidden" />
       </label>
 
-      <button onclick="addTextItem()" class="w-12 sm:w-16 py-1.5 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+      <button onclick="addTextItem()" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
         <div class="w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center"><i data-lucide="type" class="w-4 h-4"></i></div>
-        <span class="text-[10px] font-medium">Texto</span>
+        <span class="text-[9px] font-medium">Texto</span>
       </button>
 
-      <button onclick="addStickyNote()" class="w-12 sm:w-16 py-1.5 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+      <button onclick="addStickyNote()" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
         <div class="w-8 h-8 rounded-lg bg-yellow-100 text-yellow-700 flex items-center justify-center"><i data-lucide="sticky-note" class="w-4 h-4"></i></div>
-        <span class="text-[10px] font-medium">Nota</span>
+        <span class="text-[9px] font-medium">Nota</span>
       </button>
 
-      <button id="drawModeBtn" onclick="toggleDrawMode()" class="w-12 sm:w-16 py-1.5 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+      <button id="drawModeBtn" onclick="toggleDrawMode()" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
         <div id="drawIconWrap" class="w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center"><i data-lucide="pen-tool" class="w-4 h-4"></i></div>
-        <span class="text-[10px] font-medium">Desenhar</span>
+        <span class="text-[9px] font-medium">Desenhar</span>
       </button>
 
-      <button onclick="toggleDrawer('stickers')" id="btnDrawerStickers" class="w-12 sm:w-16 py-1.5 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+      <button onclick="toggleDrawer('stickers')" id="btnDrawerStickers" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
         <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i data-lucide="sparkles" class="w-4 h-4"></i></div>
-        <span class="text-[10px] font-medium">Adesivos</span>
+        <span class="text-[9px] font-medium">Adesivos</span>
       </button>
 
-      <button onclick="toggleDrawer('paper')" id="btnDrawerPaper" class="w-12 sm:w-16 py-1.5 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+      <button onclick="toggleDrawer('paper')" id="btnDrawerPaper" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
         <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center"><i data-lucide="scroll-text" class="w-4 h-4"></i></div>
-        <span class="text-[10px] font-medium">Papel</span>
+        <span class="text-[9px] font-medium">Papel</span>
+      </button>
+
+      <div class="w-10 border-t border-stone-200 my-1"></div>
+
+      <!-- Navegação de Páginas na Lateral Esquerda -->
+      <button onclick="openPageGridModal()" title="Visão Geral" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center"><i data-lucide="layout-grid" class="w-4 h-4"></i></div>
+        <span class="text-[9px] font-medium">Páginas</span>
+      </button>
+
+      <div class="flex items-center gap-1 my-0.5">
+        <button onclick="prevPage()" id="prevPageBtn" class="p-1 rounded-lg hover:bg-stone-100 disabled:opacity-30 text-stone-700 transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+        <button onclick="nextPage()" id="nextPageBtn" class="p-1 rounded-lg hover:bg-stone-100 disabled:opacity-30 text-stone-700 transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+      </div>
+
+      <button onclick="addNewPage(false)" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition" title="Nova Página">
+        <div class="w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center"><i data-lucide="plus" class="w-4 h-4"></i></div>
+        <span class="text-[9px] font-medium">Nova</span>
+      </button>
+
+      <button onclick="deleteCurrentPage()" id="deletePageBtn" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-red-50 text-stone-400 hover:text-red-600 flex flex-col items-center gap-0.5 transition" title="Excluir">
+        <div class="w-8 h-8 rounded-lg bg-stone-50 text-stone-500 flex items-center justify-center"><i data-lucide="trash-2" class="w-4 h-4"></i></div>
+        <span class="text-[9px] font-medium">Excluir</span>
       </button>
     </aside>
 
-    <div id="sideDrawer" class="hidden absolute sm:relative left-14 sm:left-0 top-0 bottom-0 w-60 bg-white border-r border-stone-200 p-3.5 flex-col gap-3 z-30 shadow-xl overflow-y-auto shrink-0">
+    <!-- Painel Lateral Secundário -->
+    <div id="sideDrawer" class="hidden absolute sm:relative left-16 sm:left-0 top-0 bottom-0 w-60 bg-white border-r border-stone-200 p-3.5 flex-col gap-3 z-30 shadow-xl overflow-y-auto shrink-0">
       <div class="flex items-center justify-between border-b border-stone-100 pb-2">
         <h3 id="drawerTitle" class="font-semibold text-sm text-stone-800">Opções</h3>
         <button onclick="closeDrawer()" class="p-1 rounded-lg hover:bg-stone-100 text-stone-500"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -232,6 +215,7 @@
       <div id="drawerContent" class="flex flex-col gap-3"></div>
     </div>
 
+    <!-- Área do Canvas -->
     <main class="flex-1 flex flex-col overflow-hidden bg-stone-200/90 relative min-w-0">
       <div id="contextToolbar" class="h-11 bg-white/95 backdrop-blur border-b border-stone-200 px-3 flex items-center gap-2 overflow-x-auto shrink-0 z-10">
         <span class="text-xs text-stone-500 flex items-center gap-1.5 whitespace-nowrap">
@@ -252,17 +236,10 @@
         </div>
       </div>
 
-      <footer class="h-12 sm:h-14 bg-white border-t border-stone-200 px-2 sm:px-5 flex items-center justify-between shrink-0 z-20">
-        <div class="flex items-center gap-1 sm:gap-1.5 min-w-0">
-          <button onclick="openPageGridModal()" class="p-1.5 sm:p-2 rounded-xl bg-stone-100 hover:bg-amber-100 text-stone-700 transition flex items-center gap-1 text-xs font-medium shrink-0"><i data-lucide="layout-grid" class="w-4 h-4"></i></button>
-          <button onclick="prevPage()" id="prevPageBtn" class="p-1.5 rounded-xl hover:bg-stone-100 disabled:opacity-30 text-stone-700 transition shrink-0"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-          <div id="pageTabs" class="flex items-center gap-1 max-w-[110px] sm:max-w-xs overflow-x-auto py-1"></div>
-          <button onclick="nextPage()" id="nextPageBtn" class="p-1.5 rounded-xl hover:bg-stone-100 disabled:opacity-30 text-stone-700 transition shrink-0"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-          <button onclick="addNewPage(false)" class="px-2 py-1.5 rounded-xl bg-stone-100 hover:bg-amber-100 text-stone-700 text-xs font-medium flex items-center gap-1 transition shrink-0"><i data-lucide="plus" class="w-3.5 h-3.5"></i><span class="hidden sm:inline">Nova</span></button>
-          <button onclick="deleteCurrentPage()" id="deletePageBtn" class="p-1.5 rounded-xl hover:bg-red-50 text-stone-400 hover:text-red-600 transition shrink-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-        </div>
-
-        <div class="flex items-center gap-1 bg-stone-100 p-1 rounded-xl shrink-0">
+      <!-- Rodapé Compacto com Indicador e Zoom -->
+      <footer class="h-10 bg-white border-t border-stone-200 px-4 flex items-center justify-between shrink-0 z-20">
+        <span id="pageIndicatorLabel" class="text-xs font-semibold text-stone-600">Página 1</span>
+        <div class="flex items-center gap-1 bg-stone-100 p-0.5 rounded-xl shrink-0">
           <button onclick="adjustZoom(-0.08)" class="p-1 rounded-lg hover:bg-white text-stone-600 transition"><i data-lucide="zoom-out" class="w-3.5 h-3.5"></i></button>
           <span id="zoomLabel" class="text-[11px] font-semibold text-stone-600 w-9 text-center">100%</span>
           <button onclick="adjustZoom(0.08)" class="p-1 rounded-lg hover:bg-white text-stone-600 transition"><i data-lucide="zoom-in" class="w-3.5 h-3.5"></i></button>
@@ -336,6 +313,16 @@
       document.getElementById('redoBtn').disabled = redoStack.length === 0;
     }
 
+    function toggleMenuDropdown(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('headerMenuDropdown');
+      menu.classList.toggle('hidden');
+    }
+    function closeMenuDropdown() {
+      document.getElementById('headerMenuDropdown').classList.add('hidden');
+    }
+    window.addEventListener('click', () => closeMenuDropdown());
+
     window.addEventListener('DOMContentLoaded', () => {
       loadFromLocalStorage();
       if (albumState.pages.length === 0) initDefaultAlbum();
@@ -391,13 +378,14 @@
       sheet.className = `w-[842px] h-[595px] relative overflow-hidden rounded-sm sheet-shadow transition-colors duration-300 ${page.paper}`;
       document.getElementById('pageNumberBadge').style.color = page.paper === 'paper-cover' ? '#ffffff' : '#44403c';
       document.getElementById('pageNumberBadge').textContent = page.isCover ? 'Capa' : `Página ${albumState.currentPageIndex}`;
+      document.getElementById('pageIndicatorLabel').textContent = page.isCover ? 'Capa do Álbum' : `Página ${albumState.currentPageIndex} de ${albumState.pages.length - 1}`;
 
       const layer = document.getElementById('elementsLayer');
       layer.innerHTML = '';
       page.items.forEach(item => layer.appendChild(createDOMElementForItem(item)));
 
       loadDrawingToCanvas(page.drawingData);
-      renderPageTabs();
+      updateNavigationButtons();
       updateContextToolbar();
       lucide.createIcons();
     }
@@ -854,16 +842,7 @@
     function changeTextColor(c) { const page = getCurrentPage(), item = page.items.find(i => i.id === selectedItemId); if (item) { pushHistory(); item.color = c; renderAll(); saveToLocalStorage(); } }
     function changeStickyBg(c) { const page = getCurrentPage(), item = page.items.find(i => i.id === selectedItemId); if (item) { pushHistory(); item.bgColor = c; renderAll(); saveToLocalStorage(); } }
 
-    function renderPageTabs() {
-      const container = document.getElementById('pageTabs'); container.innerHTML = '';
-      albumState.pages.forEach((p, idx) => {
-        const isSelected = idx === albumState.currentPageIndex;
-        const btn = document.createElement('button');
-        btn.className = `px-2.5 py-1 rounded-xl text-xs font-medium transition flex items-center shrink-0 ${isSelected ? 'bg-amber-600 text-white shadow-sm' : 'bg-stone-100 hover:bg-stone-200 text-stone-700'}`;
-        btn.innerHTML = `<span>${p.isCover ? 'Capa' : idx}</span>`;
-        btn.onclick = () => { albumState.currentPageIndex = idx; selectedItemId = null; renderAll(); };
-        container.appendChild(btn);
-      });
+    function updateNavigationButtons() {
       document.getElementById('prevPageBtn').disabled = albumState.currentPageIndex === 0;
       document.getElementById('nextPageBtn').disabled = albumState.currentPageIndex === albumState.pages.length - 1;
       document.getElementById('deletePageBtn').disabled = albumState.pages.length <= 1;
@@ -921,7 +900,7 @@
         await new Promise(r => setTimeout(r, 250));
         const canvasImg = await html2canvas(document.getElementById('paperSheet'), { scale: 2, useCORS: true, allowTaint: true, logging: false });
         canvasImg.toBlob(async (blob) => {
-          const file = new File([blob], `${albumState.title}_p${albumState.currentPageIndex + 1}.png`, { type: 'image/png' });
+          const file = new File([blob], `${albumState.title.replace(/\s+/g, '_')}_p${albumState.currentPageIndex + 1}.png`, { type: 'image/png' });
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({ files: [file], title: albumState.title, text: 'Confira esta página!' });
           } else {
@@ -935,23 +914,36 @@
 
     function saveToLocalStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(albumState)); }
     function loadFromLocalStorage() { const data = localStorage.getItem(STORAGE_KEY); if (data) { try { albumState = JSON.parse(data); } catch(e){} } }
+
     function exportProjectJSON() {
-      const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(albumState, null, 2));
-      a.download = `${albumState.title}_backup.json`; a.click(); a.remove();
+      try {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(albumState, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `${albumState.title.replace(/\s+/g, '_')}_backup.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+      } catch (err) {
+        console.error('Erro ao exportar JSON:', err);
+        showModal('Erro', 'Não foi possível gerar o arquivo de backup.');
+      }
     }
+
     function importProjectJSON(e) {
       const file = e.target.files[0]; if (!file) return;
       const reader = new FileReader();
       reader.onload = (ev) => {
         try {
           const imp = JSON.parse(ev.target.result);
-          if (imp.pages) { pushHistory(); albumState = imp; document.getElementById('albumTitleInput').value = albumState.title; albumState.currentPageIndex = 0; selectedItemId = null; renderAll(); saveToLocalStorage(); showModal('Sucesso', 'Backup importado!'); }
-        } catch(err) { showModal('Erro', 'Arquivo inválido.'); }
+          if (imp.pages) { pushHistory(); albumState = imp; document.getElementById('albumTitleInput').value = albumState.title; albumState.currentPageIndex = 0; selectedItemId = null; renderAll(); saveToLocalStorage(); showModal('Sucesso', 'Backup importado com sucesso!'); }
+        } catch(err) { showModal('Erro', 'Arquivo de backup inválido.'); }
       };
       reader.readAsText(file); e.target.value = '';
     }
+
     function openResetModal() {
-      showConfirmModal('Novo Álbum', 'Deseja apagar tudo e criar um novo?', () => {
+      showConfirmModal('Novo Álbum', 'Deseja apagar tudo e criar um novo álbum?', () => {
         pushHistory(); localStorage.removeItem(STORAGE_KEY); initDefaultAlbum();
         document.getElementById('albumTitleInput').value = albumState.title; selectedItemId = null; renderAll(); saveToLocalStorage();
       });
@@ -969,7 +961,7 @@
           if (i > 0) pdf.addPage([SHEET_WIDTH, SHEET_HEIGHT], 'landscape');
           pdf.addImage(canvasImg.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, SHEET_WIDTH, SHEET_HEIGHT);
         }
-        pdf.save(`${albumState.title}.pdf`);
+        pdf.save(`${albumState.title.replace(/\s+/g, '_')}.pdf`);
       } catch(err) { console.error(err); }
       finally { albumState.currentPageIndex = origIdx; document.body.classList.remove('exporting-mode'); renderAll(); overlay.classList.remove('flex'); overlay.classList.add('hidden'); }
     }
