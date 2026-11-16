@@ -275,7 +275,7 @@
       <div class="p-4 border-b border-stone-100 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i data-lucide="folder-archive" class="w-5 h-5 text-amber-600"></i>
-          <h3 class="font-bold text-stone-800 text-base">Meus Trabalhos Salvos</h3>
+          <h3 class="font-bold text-stone-800 text-base">Meus Trabalhos Salvos (OPFS)</h3>
         </div>
         <button onclick="closeFilesModal()" class="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
@@ -307,6 +307,7 @@
     const SHEET_WIDTH = 842;
     const SHEET_HEIGHT = 595;
     const STORAGE_KEY = 'album_recordacoes_v1';
+    const OPFS_FOLDER_NAME = 'scrapbook_exports';
     let albumState = { title: 'Meu Álbum de Recordações', currentPageIndex: 0, pages: [] };
     let undoStack = [], redoStack = [];
     const MAX_HISTORY = 25;
@@ -756,17 +757,60 @@
 
     function closeDrawer() { document.getElementById('sideDrawer').classList.add('hidden'); document.getElementById('sideDrawer').classList.remove('flex'); }
 
-    function handlePhotoUpload(e) {
-      const files = e.target.files; if (!files || files.length === 0) return;
-      pushHistory();
-      Array.from(files).forEach((file, index) => {
+    // Compressão de fotos antes de inserir na página (evita travar memória no Android)
+    function compressImageFile(file, maxDim = 1100, quality = 0.82) {
+      return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (event) => {
-          const newItem = { id: generateId(), type: 'photo', x: 80 + (index * 30) % 300, y: 80 + (index * 30) % 180, width: 300, rotation: (Math.random() * 6 - 3), src: event.target.result, frame: 'frame-polaroid', filter: 'filter-none', caption: 'Minha lembrança' };
-          getCurrentPage().items.push(newItem); selectItem(newItem.id); renderAll(); saveToLocalStorage();
+          const img = new Image();
+          img.onload = () => {
+            let w = img.width;
+            let h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) {
+                h = Math.round((h * maxDim) / w);
+                w = maxDim;
+              } else {
+                w = Math.round((w * maxDim) / h);
+                h = maxDim;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.src = event.target.result;
         };
         reader.readAsDataURL(file);
       });
+    }
+
+    async function handlePhotoUpload(e) {
+      const files = e.target.files; if (!files || files.length === 0) return;
+      pushHistory();
+      const fileArray = Array.from(files);
+      for (let index = 0; index < fileArray.length; index++) {
+        const compressedDataUrl = await compressImageFile(fileArray[index]);
+        const newItem = {
+          id: generateId(),
+          type: 'photo',
+          x: 80 + (index * 30) % 300,
+          y: 80 + (index * 30) % 180,
+          width: 300,
+          rotation: (Math.random() * 6 - 3),
+          src: compressedDataUrl,
+          frame: 'frame-polaroid',
+          filter: 'filter-none',
+          caption: 'Minha lembrança'
+        };
+        getCurrentPage().items.push(newItem);
+        selectItem(newItem.id);
+      }
+      renderAll();
+      saveToLocalStorage();
       e.target.value = '';
     }
 
@@ -956,21 +1000,22 @@
       selectedItemId = null; renderAll(); document.body.classList.add('exporting-mode');
       try {
         await new Promise(r => setTimeout(r, 250));
-        const canvasImg = await html2canvas(document.getElementById('paperSheet'), { scale: 2, useCORS: true, allowTaint: true, logging: false });
+        const canvasImg = await html2canvas(document.getElementById('paperSheet'), { scale: 1.5, useCORS: true, allowTaint: true, logging: false });
         canvasImg.toBlob(async (blob) => {
-          const file = new File([blob], `${albumState.title.replace(/\s+/g, '_')}_p${albumState.currentPageIndex + 1}.png`, { type: 'image/png' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: albumState.title, text: 'Confira esta página!' });
-          } else {
-            const url = URL.createObjectURL(blob), a = document.createElement('a');
-            a.href = url; a.download = file.name; a.click(); URL.revokeObjectURL(url);
-          }
+          const fileName = `${albumState.title.replace(/\s+/g, '_')}_p${albumState.currentPageIndex + 1}.png`;
+          await salvarOuCompartilharArquivo(blob, fileName, 'image/png');
         }, 'image/png');
       } catch (err) { console.error(err); }
       finally { document.body.classList.remove('exporting-mode'); renderAll(); overlay.classList.remove('flex'); overlay.classList.add('hidden'); }
     }
 
-    function saveToLocalStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(albumState)); }
+    function saveToLocalStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(albumState));
+      } catch (e) {
+        console.warn('Limite do localStorage atingido, usando apenas sessão.');
+      }
+    }
     function loadFromLocalStorage() { const data = localStorage.getItem(STORAGE_KEY); if (data) { try { albumState = JSON.parse(data); } catch(e){} } }
 
     function importProjectJSON(e) {
@@ -992,98 +1037,162 @@
       });
     }
 
-    // Sistema de Histórico Interno e Armazenamento Seguro
-    function registrarArquivoInterno(fileName, mimeType, base64Data) {
-      let arquivosSalvos = JSON.parse(localStorage.getItem('scrapbook_historico_arquivos') || '[]');
-      arquivosSalvos.unshift({
-        id: 'file_' + Date.now(),
-        name: fileName,
-        type: mimeType,
-        date: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
-        data: base64Data
-      });
-      if (arquivosSalvos.length > 15) arquivosSalvos.pop();
-      localStorage.setItem('scrapbook_historico_arquivos', JSON.stringify(arquivosSalvos));
+    // =========================================================================
+    // SISTEMA DE ARMAZENAMENTO OFFS (Origin Private File System) + FILE PICKER
+    // =========================================================================
+
+    async function getOpfsExportsDirectory() {
+      if (!navigator.storage || !navigator.storage.getDirectory) return null;
+      const root = await navigator.storage.getDirectory();
+      return await root.getDirectoryHandle(OPFS_FOLDER_NAME, { create: true });
     }
 
-    function openFilesModal() {
-      const container = document.getElementById('filesListContainer');
-      container.innerHTML = '';
-      let arquivosSalvos = JSON.parse(localStorage.getItem('scrapbook_historico_arquivos') || '[]');
-
-      if (arquivosSalvos.length === 0) {
-        container.innerHTML = `<div class="text-center py-8 text-stone-400 text-xs">Nenhum arquivo gerado ainda. Crie um PDF ou backup JSON para vê-lo aqui.</div>`;
-      } else {
-        arquivosSalvos.forEach(file => {
-          const itemDiv = document.createElement('div');
-          itemDiv.className = 'bg-white p-3 rounded-xl border border-stone-200 flex items-center justify-between shadow-xs gap-2';
-          itemDiv.innerHTML = `
-            <div class="min-w-0 flex-1">
-              <p class="font-bold text-xs text-stone-800 truncate">${file.name}</p>
-              <p class="text-[10px] text-stone-400">${file.date}</p>
-            </div>
-            <div class="flex items-center gap-1.5 shrink-0">
-              <button onclick="baixarArquivoSalvo('${file.id}')" class="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold transition flex items-center gap-1">
-                <i data-lucide="download" class="w-3.5 h-3.5"></i> Baixar
-              </button>
-              <button onclick="excluirArquivoSalvo('${file.id}')" class="p-1.5 rounded-lg hover:bg-red-50 text-stone-400 hover:text-red-600 transition">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
-            </div>
-          `;
-          container.appendChild(itemDiv);
-        });
+    async function gravarNoOPFS(fileName, blob) {
+      try {
+        const dir = await getOpfsExportsDirectory();
+        if (!dir) return false;
+        const fileHandle = await dir.getFileHandle(fileName, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return true;
+      } catch (err) {
+        console.error('Erro ao gravar arquivo no OPFS:', err);
+        return false;
       }
+    }
+
+    async function openFilesModal() {
+      const container = document.getElementById('filesListContainer');
+      container.innerHTML = `<div class="text-center py-6 text-stone-400 text-xs">Carregando arquivos salvos...</div>`;
       document.getElementById('filesModal').classList.remove('hidden');
-      lucide.createIcons();
+
+      try {
+        const dir = await getOpfsExportsDirectory();
+        if (!dir) {
+          container.innerHTML = `<div class="text-center py-8 text-stone-400 text-xs">Armazenamento OPFS não suportado neste navegador.</div>`;
+          return;
+        }
+
+        const entries = [];
+        for await (const [name, handle] of dir.entries()) {
+          if (handle.kind === 'file') {
+            const file = await handle.getFile();
+            entries.push({
+              name: name,
+              size: (file.size / 1024).toFixed(1) + ' KB',
+              date: new Date(file.lastModified).toLocaleDateString('pt-BR') + ' ' + new Date(file.lastModified).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+            });
+          }
+        }
+
+        container.innerHTML = '';
+        if (entries.length === 0) {
+          container.innerHTML = `<div class="text-center py-8 text-stone-400 text-xs">Nenhum arquivo gerado ainda. Crie um PDF ou backup JSON para salvá-lo aqui offline.</div>`;
+        } else {
+          entries.forEach(file => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'bg-white p-3 rounded-xl border border-stone-200 flex items-center justify-between shadow-xs gap-2';
+            itemDiv.innerHTML = `
+              <div class="min-w-0 flex-1">
+                <p class="font-bold text-xs text-stone-800 truncate">${file.name}</p>
+                <p class="text-[10px] text-stone-400">${file.date} • ${file.size}</p>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="baixarArquivoDoOPFS('${file.name}')" class="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold transition flex items-center gap-1">
+                  <i data-lucide="share-2" class="w-3.5 h-3.5"></i> Abrir/Enviar
+                </button>
+                <button onclick="excluirArquivoDoOPFS('${file.name}')" class="p-1.5 rounded-lg hover:bg-red-50 text-stone-400 hover:text-red-600 transition">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            `;
+            container.appendChild(itemDiv);
+          });
+        }
+        lucide.createIcons();
+      } catch (err) {
+        console.error('Erro ao listar OPFS:', err);
+        container.innerHTML = `<div class="text-center py-8 text-red-400 text-xs">Erro ao acessar arquivos internos.</div>`;
+      }
     }
 
     function closeFilesModal() {
       document.getElementById('filesModal').classList.add('hidden');
     }
 
-    function excluirArquivoSalvo(id) {
-      let arquivosSalvos = JSON.parse(localStorage.getItem('scrapbook_historico_arquivos') || '[]');
-      arquivosSalvos = arquivosSalvos.filter(f => f.id !== id);
-      localStorage.setItem('scrapbook_historico_arquivos', JSON.stringify(arquivosSalvos));
-      openFilesModal();
-    }
-
-    function baixarArquivoSalvo(id) {
-      let arquivosSalvos = JSON.parse(localStorage.getItem('scrapbook_historico_arquivos') || '[]');
-      let file = arquivosSalvos.find(f => f.id === id);
-      if (!file) return;
-
-      const byteCharacters = atob(file.data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: file.type });
-
-      salvarOuCompartilharArquivo(blob, file.name, file.type);
-    }
-
-    async function salvarOuCompartilharArquivo(blob, fileName, mimeType) {
+    async function excluirArquivoDoOPFS(fileName) {
       try {
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = () => {
-          const base64Data = reader.result.split(',')[1];
-          registrarArquivoInterno(fileName, mimeType, base64Data);
-        };
+        const dir = await getOpfsExportsDirectory();
+        if (dir) {
+          await dir.removeEntry(fileName);
+          openFilesModal();
+        }
+      } catch (err) {
+        console.error('Erro ao remover arquivo do OPFS:', err);
+      }
+    }
 
+    async function baixarArquivoDoOPFS(fileName) {
+      try {
+        const dir = await getOpfsExportsDirectory();
+        if (!dir) return;
+        const fileHandle = await dir.getFileHandle(fileName);
+        const file = await fileHandle.getFile();
+        const mimeType = fileName.endsWith('.pdf') ? 'application/pdf' : (fileName.endsWith('.json') ? 'application/json' : 'image/png');
+
+        await salvarOuCompartilharArquivo(file, fileName, mimeType, false);
+      } catch (err) {
+        console.error('Erro ao ler arquivo do OPFS:', err);
+        showModal('Erro', 'Não foi possível abrir o arquivo.');
+      }
+    }
+
+    async function salvarOuCompartilharArquivo(blob, fileName, mimeType, salvarCopiaOPFS = true) {
+      // 1. Grava fisicamente no armazenamento privado OPFS para acesso offline garantido
+      if (salvarCopiaOPFS) {
+        await gravarNoOPFS(fileName, blob);
+      }
+
+      // 2. Tenta File System Access API (showSaveFilePicker) se o navegador permitir
+      if ('showSaveFilePicker' in window) {
+        try {
+          const ext = fileName.split('.').pop();
+          const handle = await window.showSaveFilePicker({
+            suggestedName: fileName,
+            types: [{
+              description: 'Arquivo do Álbum',
+              accept: { [mimeType]: ['.' + ext] }
+            }]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          showModal('Salvo com Sucesso', `O arquivo "${fileName}" foi salvo na pasta selecionada e no histórico offline do app.`);
+          return;
+        } catch (pickerErr) {
+          if (pickerErr.name === 'AbortError') return;
+        }
+      }
+
+      // 3. Tenta Web Share API Nativa do Android (bandeja de compartilhamento / Salvar em Arquivos)
+      try {
         const file = new File([blob], fileName, { type: mimeType });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
-            title: 'Scrapbook Digital',
-            text: `Aqui está o seu arquivo: ${fileName}`
+            title: fileName,
+            text: `Arquivo gerado pelo Álbum de Recordações: ${fileName}`
           });
           return;
         }
+      } catch (shareErr) {
+        if (shareErr.name === 'AbortError') return;
+        console.warn('Web Share API indisponível ou bloqueada:', shareErr);
+      }
 
+      // 4. Fallback final: Blob URL direto
+      try {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -1094,11 +1203,9 @@
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
         }, 1000);
-
+        showModal('Arquivo Salvo Offline', `O arquivo "${fileName}" foi gravado no armazenamento interno do app. Acesse "Meus Trabalhos Salvos" no menu para visualizá-lo.`);
       } catch (err) {
-        if (err.name === 'AbortError') return;
-        console.error('Erro ao salvar/compartilhar arquivo:', err);
-        showModal('Erro', 'Não foi possível exportar o arquivo neste dispositivo. Acesse "Meus Trabalhos Salvos" no menu para recuperá-lo.');
+        showModal('Salvo no App', `O arquivo "${fileName}" foi salvo internamente no armazenamento offline (OPFS). Abra "Meus Trabalhos Salvos" no menu superior.`);
       }
     }
 
@@ -1109,7 +1216,7 @@
         const jsonStr = JSON.stringify(albumState, null, 2);
         const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
 
-        await salvarOuCompartilharArquivo(blob, fileName, 'application/json');
+        await salvarOuCompartilharArquivo(blob, fileName, 'application/json', true);
       } catch (err) {
         console.error('Erro ao exportar JSON:', err);
         showModal('Erro', 'Não foi possível exportar o backup.');
@@ -1117,51 +1224,55 @@
     }
 
     async function exportToPDF() {
-      const overlay = document.getElementById('pdfOverlay'); 
+      const overlay = document.getElementById('pdfOverlay');
+      const progressText = document.getElementById('pdfProgressText');
       document.getElementById('overlayTitle').textContent = 'Gerando PDF...';
-      overlay.classList.remove('hidden'); 
-      overlay.classList.add('flex'); 
-      
-      selectedItemId = null; 
-      renderAll(); 
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+
+      selectedItemId = null;
+      renderAll();
       document.body.classList.add('exporting-mode');
-      
+
       const titulo = (albumState.title || 'Meu_Album').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_');
       const fileName = `${titulo}.pdf`;
-      
-      const { jsPDF } = window.jspdf; 
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [SHEET_WIDTH, SHEET_HEIGHT] });
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [SHEET_WIDTH, SHEET_HEIGHT], compress: true });
       const origIdx = albumState.currentPageIndex;
-      
+
       try {
         for (let i = 0; i < albumState.pages.length; i++) {
-          albumState.currentPageIndex = i; 
-          renderAll(); 
-          await new Promise(r => setTimeout(r, 400));
-          
-          const canvasImg = await html2canvas(document.getElementById('paperSheet'), { 
-            scale: 2, 
-            useCORS: true, 
-            allowTaint: true, 
-            logging: false 
-          });
-          
-          if (i > 0) pdf.addPage([SHEET_WIDTH, SHEET_HEIGHT], 'landscape');
-          pdf.addImage(canvasImg.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, SHEET_WIDTH, SHEET_HEIGHT);
-        }
-        
-        const pdfBlob = pdf.output('blob');
-        await salvarOuCompartilharArquivo(pdfBlob, fileName, 'application/pdf');
+          progressText.textContent = `Renderizando página ${i + 1} de ${albumState.pages.length}...`;
+          albumState.currentPageIndex = i;
+          renderAll();
+          await new Promise(r => setTimeout(r, 350));
 
-      } catch(err) { 
+          // Escala 1.35 reduz o consumo de RAM em ~60% evitando travamento no WebView do Android
+          const canvasImg = await html2canvas(document.getElementById('paperSheet'), {
+            scale: 1.35,
+            useCORS: true,
+            allowTaint: true,
+            logging: false
+          });
+
+          if (i > 0) pdf.addPage([SHEET_WIDTH, SHEET_HEIGHT], 'landscape');
+          pdf.addImage(canvasImg.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, SHEET_WIDTH, SHEET_HEIGHT);
+        }
+
+        progressText.textContent = 'Gravando arquivo no armazenamento local...';
+        const pdfBlob = pdf.output('blob');
+        await salvarOuCompartilharArquivo(pdfBlob, fileName, 'application/pdf', true);
+
+      } catch (err) {
         console.error('Erro ao gerar PDF:', err);
         showModal('Erro', 'Não foi possível gerar o PDF no celular.');
-      } finally { 
-        albumState.currentPageIndex = origIdx; 
-        document.body.classList.remove('exporting-mode'); 
-        renderAll(); 
-        overlay.classList.remove('flex'); 
-        overlay.classList.add('hidden'); 
+      } finally {
+        albumState.currentPageIndex = origIdx;
+        document.body.classList.remove('exporting-mode');
+        renderAll();
+        overlay.classList.remove('flex');
+        overlay.classList.add('hidden');
       }
     }
 
