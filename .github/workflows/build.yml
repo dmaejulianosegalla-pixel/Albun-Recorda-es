@@ -24,43 +24,23 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Preparar pasta web e Capacitor
+      - name: Preparar pasta web, assets e Capacitor
         run: |
           mkdir -p www
           cp index.html www/
           cp manifest.json www/ || true
           cp *.png www/ || true
+          
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install -g @capacitor/assets
+          
           npx cap init "Scrapbook Digital" com.scrapbook.digital --web-dir=www
           npx cap add android
-
-      - name: Inserir Icones Personalizados Corretamente no Android
-        run: |
+          
+          # Gera automaticamente todos os ícones nativos (adaptativos, redondos e quadrados) a partir do icon-512.png
           if [ -f icon-512.png ]; then
-            mkdir -p android/app/src/main/res/mipmap-hdpi
-            mkdir -p android/app/src/main/res/mipmap-mdpi
-            mkdir -p android/app/src/main/res/mipmap-xhdpi
-            mkdir -p android/app/src/main/res/mipmap-xxhdpi
-            mkdir -p android/app/src/main/res/mipmap-xxxhdpi
-            
-            cp icon-512.png android/app/src/main/res/mipmap-hdpi/ic_launcher.png
-            cp icon-512.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
-            cp icon-512.png android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-            cp icon-512.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-            cp icon-512.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-
-            cp icon-512.png android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
-            cp icon-512.png android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
-            cp icon-512.png android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
-            cp icon-512.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
-            cp icon-512.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
-            
-            cp icon-512.png android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png
-            cp icon-512.png android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png
-            cp icon-512.png android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png
-            cp icon-512.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png
-            cp icon-512.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
+            npx capacitor-assets generate --android --iconBackgroundColor "#3f2e26"
           fi
 
       - name: Ajustar Conflitos do Kotlin e SDK do Android
