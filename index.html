@@ -973,34 +973,65 @@
       });
     }
 
-    // Solução Definitiva Baseada em Compartilhamento Nativo para o Android (APK)
+    // Função universal definitiva com Capacitor Filesystem para Android e PC
     async function salvarOuCompartilharArquivo(blob, fileName, mimeType) {
       try {
-        const file = new File([blob], fileName, { type: mimeType });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: 'Scrapbook Digital',
-            text: `Aqui está o seu arquivo: ${fileName}`
-          });
+        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+          const reader = new FileReader();
+          reader.readAsDataURL(blob);
+          reader.onloadend = async () => {
+            const base64Data = reader.result.split(',')[1];
+            try {
+              await Capacitor.Plugins.Filesystem.writeFile({
+                path: fileName,
+                data: base64Data,
+                directory: 'CACHE'
+              });
+              
+              if (navigator.canShare) {
+                const file = new File([blob], fileName, { type: mimeType });
+                await navigator.share({
+                  files: [file],
+                  title: 'Scrapbook Digital',
+                  text: `Arquivo gerado: ${fileName}`
+                });
+              } else {
+                showModal('Sucesso', `Arquivo salvo no celular: ${fileName}`);
+              }
+            } catch (fsErr) {
+              console.error('Erro no Filesystem nativo:', fsErr);
+              fallbackDownload(blob, fileName);
+            }
+          };
           return;
         }
 
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 1000);
+        const file = new File([blob], fileName, { type: mimeType });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'Scrapbook Digital', text: `Arquivo: ${fileName}` });
+          return;
+        }
+
+        fallbackDownload(blob, fileName);
+
       } catch (err) {
         if (err.name === 'AbortError') return;
-        console.error('Erro ao salvar/compartilhar arquivo:', err);
-        showModal('Erro', 'Não foi possível exportar o arquivo neste dispositivo.');
+        console.error('Erro ao salvar arquivo:', err);
+        fallbackDownload(blob, fileName);
       }
+    }
+
+    function fallbackDownload(blob, fileName) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 1000);
     }
 
     async function exportProjectJSON() {
