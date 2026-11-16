@@ -1,12 +1,10 @@
 {
-  "name": "Álbum de Recordações - Scrapbook Digital",
+  "name": "Scrapbook Digital",
   "short_name": "Scrapbook",
-  "description": "Crie, personalize e exporte seu álbum de recordações digital",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#e7e5e4",
   "theme_color": "#d97706",
-  "orientation": "landscape",
   "icons": [
     {
       "src": "icon-192.png",

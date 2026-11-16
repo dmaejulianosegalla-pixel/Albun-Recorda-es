@@ -2,14 +2,14 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Álbum de Recordações - Scrapbook Digital</title>
   <link rel="manifest" href="manifest.json" />
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Google Fonts para estilos manuscritos e clássicos -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Dancing+Script:wght@600;700&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,500;1,500&family=Patrick+Hand&display=swap" rel="stylesheet">
@@ -17,16 +17,27 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- html2canvas & jsPDF para exportação em PDF e Compartilhamento -->
+  <!-- html2canvas & jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
-    body {
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100dvh;
+      max-width: 100vw;
+      max-height: 100dvh;
+      overflow: hidden;
+      overscroll-behavior: none;
+      touch-action: manipulation;
       font-family: 'Inter', sans-serif;
       user-select: none;
-      overflow: hidden;
-      background-color: #e7e5e4; /* stone-200 */
+      -webkit-user-select: none;
+      background-color: #e7e5e4;
+      position: fixed;
+      inset: 0;
     }
 
     /* Texturas de Papel */
@@ -81,7 +92,7 @@
         inset 0 0 40px rgba(0,0,0,0.02);
     }
 
-    /* Estilos de Molduras de Fotos e Decorações */
+    /* Estilos de Molduras */
     .frame-classic {
       background: #ffffff;
       padding: 10px;
@@ -114,15 +125,9 @@
       box-shadow: 0 1px 2px rgba(0,0,0,0.1);
       z-index: 5;
     }
-    .frame-taped::before, .frame-taped::after {
-      background: rgba(253, 224, 71, 0.72);
-    }
-    .frame-taped-pink::before, .frame-taped-pink::after {
-      background: rgba(244, 114, 182, 0.65);
-    }
-    .frame-taped-blue::before, .frame-taped-blue::after {
-      background: rgba(96, 165, 250, 0.65);
-    }
+    .frame-taped::before, .frame-taped::after { background: rgba(253, 224, 71, 0.72); }
+    .frame-taped-pink::before, .frame-taped-pink::after { background: rgba(244, 114, 182, 0.65); }
+    .frame-taped-blue::before, .frame-taped-blue::after { background: rgba(96, 165, 250, 0.65); }
     .frame-taped::before, .frame-taped-pink::before, .frame-taped-blue::before {
       top: -8px;
       left: -14px;
@@ -134,7 +139,6 @@
       transform: rotate(-32deg);
     }
 
-    /* Clipe Metálico Decorativo */
     .frame-clipped {
       background: #ffffff;
       padding: 10px;
@@ -163,55 +167,58 @@
     .filter-vivid { filter: saturate(1.35) contrast(1.08); }
     .filter-soft { filter: brightness(1.06) contrast(0.92) saturate(0.9); }
 
-    /* Controles de Seleção */
+    /* Controles de Seleção Otimizados para Toque */
     .album-item {
       position: absolute;
+      touch-action: none;
     }
     .album-item.selected {
-      outline: 2px dashed #d97706;
+      outline: 2.5px dashed #d97706;
       outline-offset: 4px;
     }
     .handle-move {
       position: absolute;
-      top: -34px;
+      top: -40px;
       left: 0;
       background: #d97706;
       color: #ffffff;
-      padding: 3px 9px;
-      font-size: 11px;
+      padding: 5px 11px;
+      font-size: 12px;
       font-weight: 600;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: grab;
       display: flex;
       align-items: center;
       gap: 4px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
       z-index: 35;
       white-space: nowrap;
-    }
-    .handle-move:active {
-      cursor: grabbing;
+      touch-action: none;
     }
     .handle-resize {
       position: absolute;
-      right: -11px;
-      bottom: -11px;
-      width: 22px;
-      height: 22px;
+      right: -18px;
+      bottom: -18px;
+      width: 36px;
+      height: 36px;
       background: #d97706;
-      border: 2px solid #fff;
+      color: #ffffff;
+      border: 3px solid #fff;
       border-radius: 50%;
       cursor: nwse-resize;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
-      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+      z-index: 35;
+      touch-action: none;
     }
     .handle-rotate {
       position: absolute;
-      top: -34px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 24px;
-      height: 24px;
+      top: -40px;
+      right: 0;
+      width: 32px;
+      height: 32px;
       background: #ffffff;
       color: #d97706;
       border: 2px solid #d97706;
@@ -220,8 +227,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      z-index: 30;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      z-index: 35;
+      touch-action: none;
     }
 
     /* Guias de Alinhamento Magnéticas */
@@ -259,10 +267,10 @@
       display: none !important;
     }
 
-    /* Scrollbar discreta */
+    /* Scrollbar oculta ou discreta */
     ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 4px;
+      height: 4px;
     }
     ::-webkit-scrollbar-track {
       background: transparent;
@@ -273,156 +281,144 @@
     }
   </style>
 </head>
-<body class="h-screen w-screen flex flex-col text-stone-800">
+<body class="flex flex-col text-stone-800">
 
   <!-- Barra Superior (Header) -->
-  <header class="h-14 bg-white border-b border-stone-200 px-2 sm:px-5 flex items-center justify-between shrink-0 z-30 shadow-xs">
-    <div class="flex items-center gap-2">
-      <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-sm shrink-0">
-        <i data-lucide="book-heart" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+  <header class="h-12 sm:h-14 bg-white border-b border-stone-200 px-2 sm:px-5 flex items-center justify-between shrink-0 z-30 shadow-xs">
+    <div class="flex items-center gap-2 min-w-0">
+      <div class="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-sm shrink-0">
+        <i data-lucide="book-heart" class="w-4 h-4"></i>
       </div>
-      <div>
+      <div class="min-w-0">
         <input id="albumTitleInput" type="text" value="Meu Álbum de Recordações"
-          class="font-bold text-stone-800 text-xs sm:text-base bg-transparent border-b border-transparent hover:border-stone-300 focus:border-amber-600 focus:outline-none px-1 rounded transition w-32 sm:w-56 truncate"
-          title="Clique para editar o título do álbum" />
-        <p id="saveStatus" class="text-[10px] sm:text-[11px] text-stone-400 px-1">Salvo automaticamente</p>
+          class="font-bold text-stone-800 text-xs sm:text-base bg-transparent border-b border-transparent focus:border-amber-600 focus:outline-none px-1 rounded transition w-28 sm:w-56 truncate" />
+        <p id="saveStatus" class="text-[10px] text-stone-400 px-1 truncate">Salvo</p>
       </div>
     </div>
 
     <!-- Ações Principais -->
-    <div class="flex items-center gap-1 sm:gap-1.5">
-      <!-- Desfazer / Refazer -->
-      <div class="flex items-center bg-stone-100 rounded-xl p-0.5 border border-stone-200 mr-1">
-        <button onclick="undo()" id="undoBtn" disabled title="Desfazer (Ctrl+Z)"
+    <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
+      <div class="flex items-center bg-stone-100 rounded-xl p-0.5 border border-stone-200">
+        <button onclick="undo()" id="undoBtn" disabled title="Desfazer"
           class="p-1.5 rounded-lg text-stone-600 hover:bg-white disabled:opacity-30 transition">
           <i data-lucide="undo-2" class="w-4 h-4"></i>
         </button>
-        <button onclick="redo()" id="redoBtn" disabled title="Refazer (Ctrl+Y)"
+        <button onclick="redo()" id="redoBtn" disabled title="Refazer"
           class="p-1.5 rounded-lg text-stone-600 hover:bg-white disabled:opacity-30 transition">
           <i data-lucide="redo-2" class="w-4 h-4"></i>
         </button>
       </div>
 
-      <!-- Compartilhar Página (Android Native Share) -->
-      <button onclick="shareCurrentPage()" title="Compartilhar Página Atual como Imagem"
-        class="p-2 sm:px-3 sm:py-1.5 rounded-xl text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 flex items-center gap-1.5 transition">
+      <button onclick="shareCurrentPage()" title="Compartilhar Página Atual"
+        class="p-2 sm:px-3 sm:py-1.5 rounded-xl text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 flex items-center gap-1 transition">
         <i data-lucide="share-2" class="w-4 h-4"></i>
         <span class="hidden md:inline">Compartilhar</span>
       </button>
 
-      <button onclick="exportProjectJSON()" title="Salvar arquivo de backup (.json)"
-        class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-medium text-stone-600 hover:bg-stone-100 border border-stone-200 flex items-center gap-1 transition">
+      <button onclick="exportProjectJSON()" title="Backup (.json)"
+        class="p-2 rounded-xl text-xs font-medium text-stone-600 hover:bg-stone-100 border border-stone-200 flex items-center transition">
         <i data-lucide="download" class="w-4 h-4"></i>
-        <span class="hidden lg:inline">Backup</span>
       </button>
 
-      <label title="Carregar arquivo de backup (.json)"
-        class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-medium text-stone-600 hover:bg-stone-100 border border-stone-200 flex items-center gap-1 cursor-pointer transition">
+      <label title="Abrir Backup (.json)"
+        class="p-2 rounded-xl text-xs font-medium text-stone-600 hover:bg-stone-100 border border-stone-200 flex items-center cursor-pointer transition">
         <i data-lucide="upload" class="w-4 h-4"></i>
-        <span class="hidden lg:inline">Abrir</span>
         <input type="file" accept=".json" onchange="importProjectJSON(event)" class="hidden" />
       </label>
 
       <button onclick="openResetModal()" title="Novo Álbum"
-        class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-medium text-stone-600 hover:bg-red-50 hover:text-red-600 border border-stone-200 flex items-center gap-1 transition">
+        class="p-2 rounded-xl text-xs font-medium text-stone-600 hover:bg-red-50 hover:text-red-600 border border-stone-200 flex items-center transition">
         <i data-lucide="file-plus" class="w-4 h-4"></i>
       </button>
 
       <button onclick="exportToPDF()" id="exportPdfBtn"
-        class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-amber-600 hover:bg-amber-700 active:scale-95 text-white shadow-sm flex items-center gap-1.5 transition">
+        class="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-700 active:scale-95 text-white shadow-sm flex items-center gap-1 transition">
         <i data-lucide="file-down" class="w-4 h-4"></i>
-        <span class="hidden sm:inline">Exportar PDF</span>
-        <span class="sm:hidden">PDF</span>
+        <span>PDF</span>
       </button>
     </div>
   </header>
 
   <!-- Área Principal de Trabalho -->
-  <div class="flex-1 flex overflow-hidden relative">
+  <div class="flex-1 flex overflow-hidden relative w-full">
 
-    <!-- Barra Lateral Esquerda: Ferramentas de Criação -->
-    <aside class="w-16 sm:w-20 bg-white border-r border-stone-200 flex flex-col items-center py-3 gap-2 shrink-0 z-20 overflow-y-auto">
+    <!-- Barra Lateral Esquerda -->
+    <aside class="w-14 sm:w-20 bg-white border-r border-stone-200 flex flex-col items-center py-2 gap-1.5 shrink-0 z-20 overflow-y-auto">
       
-      <!-- Adicionar Foto -->
-      <label class="w-14 sm:w-16 py-2 rounded-xl hover:bg-amber-50 text-stone-700 hover:text-amber-700 flex flex-col items-center gap-1 cursor-pointer transition group">
-        <div class="w-9 h-9 rounded-lg bg-amber-100/70 group-hover:bg-amber-200/70 text-amber-700 flex items-center justify-center transition">
-          <i data-lucide="image-plus" class="w-5 h-5"></i>
+      <label class="w-12 sm:w-16 py-1.5 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 cursor-pointer transition">
+        <div class="w-8 h-8 rounded-lg bg-amber-100/80 text-amber-700 flex items-center justify-center">
+          <i data-lucide="image-plus" class="w-4 h-4"></i>
         </div>
-        <span class="text-[11px] font-medium">Fotos</span>
+        <span class="text-[10px] font-medium">Fotos</span>
         <input type="file" accept="image/*" multiple onchange="handlePhotoUpload(event)" class="hidden" />
       </label>
 
-      <!-- Adicionar Texto -->
-      <button onclick="addTextItem()" class="w-14 sm:w-16 py-2 rounded-xl hover:bg-amber-50 text-stone-700 hover:text-amber-700 flex flex-col items-center gap-1 transition group">
-        <div class="w-9 h-9 rounded-lg bg-stone-100 group-hover:bg-amber-100 text-stone-700 group-hover:text-amber-700 flex items-center justify-center transition">
-          <i data-lucide="type" class="w-5 h-5"></i>
+      <button onclick="addTextItem()" class="w-12 sm:w-16 py-1.5 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+        <div class="w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center">
+          <i data-lucide="type" class="w-4 h-4"></i>
         </div>
-        <span class="text-[11px] font-medium">Texto</span>
+        <span class="text-[10px] font-medium">Texto</span>
       </button>
 
-      <!-- Post-it -->
-      <button onclick="addStickyNote()" class="w-14 sm:w-16 py-2 rounded-xl hover:bg-amber-50 text-stone-700 hover:text-amber-700 flex flex-col items-center gap-1 transition group">
-        <div class="w-9 h-9 rounded-lg bg-yellow-100 text-yellow-700 flex items-center justify-center transition">
-          <i data-lucide="sticky-note" class="w-5 h-5"></i>
+      <button onclick="addStickyNote()" class="w-12 sm:w-16 py-1.5 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+        <div class="w-8 h-8 rounded-lg bg-yellow-100 text-yellow-700 flex items-center justify-center">
+          <i data-lucide="sticky-note" class="w-4 h-4"></i>
         </div>
-        <span class="text-[11px] font-medium">Nota</span>
+        <span class="text-[10px] font-medium">Nota</span>
       </button>
 
-      <!-- Caneta / Desenho Livre -->
-      <button id="drawModeBtn" onclick="toggleDrawMode()" class="w-14 sm:w-16 py-2 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-1 transition group">
-        <div id="drawIconWrap" class="w-9 h-9 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center transition">
-          <i data-lucide="pen-tool" class="w-5 h-5"></i>
+      <button id="drawModeBtn" onclick="toggleDrawMode()" class="w-12 sm:w-16 py-1.5 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+        <div id="drawIconWrap" class="w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center">
+          <i data-lucide="pen-tool" class="w-4 h-4"></i>
         </div>
-        <span class="text-[11px] font-medium">Desenhar</span>
+        <span class="text-[10px] font-medium">Desenhar</span>
       </button>
 
-      <!-- Adesivos & Carimbos -->
-      <button onclick="toggleDrawer('stickers')" id="btnDrawerStickers" class="w-14 sm:w-16 py-2 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-1 transition group">
-        <div class="w-9 h-9 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center transition">
-          <i data-lucide="sparkles" class="w-5 h-5"></i>
+      <button onclick="toggleDrawer('stickers')" id="btnDrawerStickers" class="w-12 sm:w-16 py-1.5 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+        <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
         </div>
-        <span class="text-[11px] font-medium">Adesivos</span>
+        <span class="text-[10px] font-medium">Adesivos</span>
       </button>
 
-      <!-- Papel de Fundo -->
-      <button onclick="toggleDrawer('paper')" id="btnDrawerPaper" class="w-14 sm:w-16 py-2 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-1 transition group">
-        <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center transition">
-          <i data-lucide="scroll-text" class="w-5 h-5"></i>
+      <button onclick="toggleDrawer('paper')" id="btnDrawerPaper" class="w-12 sm:w-16 py-1.5 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+          <i data-lucide="scroll-text" class="w-4 h-4"></i>
         </div>
-        <span class="text-[11px] font-medium">Papel</span>
+        <span class="text-[10px] font-medium">Papel</span>
       </button>
     </aside>
 
     <!-- Painel Flutuante Secundário -->
-    <div id="sideDrawer" class="hidden w-64 bg-white border-r border-stone-200 p-4 flex-col gap-4 z-20 shadow-lg overflow-y-auto shrink-0">
+    <div id="sideDrawer" class="hidden absolute sm:relative left-14 sm:left-0 top-0 bottom-0 w-60 bg-white border-r border-stone-200 p-3.5 flex-col gap-3 z-30 shadow-xl overflow-y-auto shrink-0">
       <div class="flex items-center justify-between border-b border-stone-100 pb-2">
         <h3 id="drawerTitle" class="font-semibold text-sm text-stone-800">Opções</h3>
         <button onclick="closeDrawer()" class="p-1 rounded-lg hover:bg-stone-100 text-stone-500">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
-      <div id="drawerContent" class="flex flex-col gap-4"></div>
+      <div id="drawerContent" class="flex flex-col gap-3"></div>
     </div>
 
     <!-- Área Central do Canvas (Folha de Papel) -->
-    <main class="flex-1 flex flex-col overflow-hidden bg-stone-200/80 relative">
+    <main class="flex-1 flex flex-col overflow-hidden bg-stone-200/90 relative min-w-0">
       
       <!-- Barra Contextual Superior -->
-      <div id="contextToolbar" class="h-12 bg-white/95 backdrop-blur border-b border-stone-200 px-4 flex items-center gap-3 overflow-x-auto shrink-0 z-10">
-        <span class="text-xs text-stone-500 flex items-center gap-1.5">
+      <div id="contextToolbar" class="h-11 bg-white/95 backdrop-blur border-b border-stone-200 px-3 flex items-center gap-2 overflow-x-auto shrink-0 z-10">
+        <span class="text-xs text-stone-500 flex items-center gap-1.5 whitespace-nowrap">
           <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-amber-600"></i>
-          Clique em um elemento para selecioná-lo, movê-lo pela alça superior ou redimensioná-lo.
+          Toque em um item para mover ou redimensionar.
         </span>
       </div>
 
-      <!-- Viewport Centralizado com Zoom Adaptativo -->
-      <div id="canvasViewport" class="flex-1 overflow-auto flex items-center justify-center p-4 sm:p-8" onmousedown="handleViewportClick(event)">
+      <!-- Viewport Centralizado com Zoom Adaptativo e Sem Scroll Solto -->
+      <div id="canvasViewport" class="flex-1 overflow-hidden flex items-center justify-center p-2 sm:p-6 relative touch-none" onmousedown="handleViewportClick(event)" ontouchstart="handleViewportClick(event)">
         
         <!-- A Folha de Papel -->
-        <div id="paperWrapper" class="relative transition-transform duration-150 origin-center">
+        <div id="paperWrapper" class="relative transition-transform duration-100 origin-center shrink-0">
           <div id="paperSheet" class="w-[842px] h-[595px] relative overflow-hidden rounded-sm sheet-shadow paper-cream transition-colors duration-300">
             
-            <!-- Guias de Alinhamento Magnéticas (Ocultas por padrão) -->
+            <!-- Guias de Alinhamento Magnéticas -->
             <div id="snapGuideV" class="snap-guide-v hidden"></div>
             <div id="snapGuideH" class="snap-guide-h hidden"></div>
 
@@ -442,50 +438,45 @@
       </div>
 
       <!-- Barra Inferior de Navegação de Páginas e Zoom -->
-      <footer class="h-14 bg-white border-t border-stone-200 px-2 sm:px-6 flex items-center justify-between shrink-0 z-20">
+      <footer class="h-12 sm:h-14 bg-white border-t border-stone-200 px-2 sm:px-5 flex items-center justify-between shrink-0 z-20">
         
         <!-- Controles de Página -->
-        <div class="flex items-center gap-1 sm:gap-2">
+        <div class="flex items-center gap-1 sm:gap-1.5 min-w-0">
           <button onclick="openPageGridModal()" title="Visão Geral das Páginas"
-            class="p-2 rounded-xl bg-stone-100 hover:bg-amber-100 text-stone-700 hover:text-amber-800 transition flex items-center gap-1 text-xs font-medium">
+            class="p-1.5 sm:p-2 rounded-xl bg-stone-100 hover:bg-amber-100 text-stone-700 transition flex items-center gap-1 text-xs font-medium shrink-0">
             <i data-lucide="layout-grid" class="w-4 h-4"></i>
-            <span class="hidden md:inline">Páginas</span>
           </button>
 
-          <button onclick="prevPage()" id="prevPageBtn" class="p-1.5 rounded-xl hover:bg-stone-100 disabled:opacity-30 text-stone-700 transition" title="Página Anterior">
-            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+          <button onclick="prevPage()" id="prevPageBtn" class="p-1.5 rounded-xl hover:bg-stone-100 disabled:opacity-30 text-stone-700 transition shrink-0">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
           </button>
 
-          <div id="pageTabs" class="flex items-center gap-1 max-w-[130px] sm:max-w-md overflow-x-auto py-1 px-1">
-            <!-- Abas geradas via JS -->
-          </div>
+          <div id="pageTabs" class="flex items-center gap-1 max-w-[110px] sm:max-w-xs overflow-x-auto py-1"></div>
 
-          <button onclick="nextPage()" id="nextPageBtn" class="p-1.5 rounded-xl hover:bg-stone-100 disabled:opacity-30 text-stone-700 transition" title="Próxima Página">
-            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+          <button onclick="nextPage()" id="nextPageBtn" class="p-1.5 rounded-xl hover:bg-stone-100 disabled:opacity-30 text-stone-700 transition shrink-0">
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
           </button>
 
-          <div class="h-5 w-[1px] bg-stone-200 mx-0.5"></div>
-
-          <button onclick="addNewPage(false)" class="px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-amber-100 text-stone-700 hover:text-amber-800 text-xs font-medium flex items-center gap-1 transition" title="Adicionar Nova Página">
-            <i data-lucide="plus" class="w-4 h-4"></i>
+          <button onclick="addNewPage(false)" class="px-2 py-1.5 rounded-xl bg-stone-100 hover:bg-amber-100 text-stone-700 text-xs font-medium flex items-center gap-1 transition shrink-0" title="Nova Página">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             <span class="hidden sm:inline">Nova</span>
           </button>
 
-          <button onclick="deleteCurrentPage()" id="deletePageBtn" class="p-1.5 rounded-xl hover:bg-red-50 text-stone-400 hover:text-red-600 transition" title="Excluir Página Atual">
+          <button onclick="deleteCurrentPage()" id="deletePageBtn" class="p-1.5 rounded-xl hover:bg-red-50 text-stone-400 hover:text-red-600 transition shrink-0" title="Excluir Página">
             <i data-lucide="trash-2" class="w-4 h-4"></i>
           </button>
         </div>
 
-        <!-- Controles de Zoom -->
-        <div class="flex items-center gap-1 bg-stone-100 p-1 rounded-xl">
-          <button onclick="adjustZoom(-0.1)" class="p-1.5 rounded-lg hover:bg-white text-stone-600 transition" title="Diminuir Zoom">
-            <i data-lucide="zoom-out" class="w-4 h-4"></i>
+        <!-- Controles de Zoom da Folha -->
+        <div class="flex items-center gap-1 bg-stone-100 p-1 rounded-xl shrink-0">
+          <button onclick="adjustZoom(-0.08)" class="p-1 rounded-lg hover:bg-white text-stone-600 transition">
+            <i data-lucide="zoom-out" class="w-3.5 h-3.5"></i>
           </button>
-          <span id="zoomLabel" class="text-xs font-semibold text-stone-600 w-10 text-center">100%</span>
-          <button onclick="adjustZoom(0.1)" class="p-1.5 rounded-lg hover:bg-white text-stone-600 transition" title="Aumentar Zoom">
-            <i data-lucide="zoom-in" class="w-4 h-4"></i>
+          <span id="zoomLabel" class="text-[11px] font-semibold text-stone-600 w-9 text-center">100%</span>
+          <button onclick="adjustZoom(0.08)" class="p-1 rounded-lg hover:bg-white text-stone-600 transition">
+            <i data-lucide="zoom-in" class="w-3.5 h-3.5"></i>
           </button>
-          <button onclick="fitSheetToScreen()" class="px-2 py-1 rounded-lg hover:bg-white text-[11px] font-medium text-stone-600 transition" title="Ajustar à tela">
+          <button onclick="fitSheetToScreen()" class="px-1.5 py-0.5 rounded-lg hover:bg-white text-[10px] font-semibold text-amber-700 transition">
             Ajustar
           </button>
         </div>
@@ -496,7 +487,7 @@
 
   <!-- Modal Visão Geral em Grade das Páginas -->
   <div id="pageGridModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-stone-100 overflow-hidden">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85dvh] flex flex-col shadow-2xl border border-stone-100 overflow-hidden">
       <div class="p-4 border-b border-stone-100 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i data-lucide="layout-grid" class="w-5 h-5 text-amber-600"></i>
@@ -506,9 +497,7 @@
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <div id="pageGridContainer" class="p-5 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-4 bg-stone-50">
-        <!-- Miniaturas geradas via JS -->
-      </div>
+      <div id="pageGridContainer" class="p-4 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-3 bg-stone-50"></div>
       <div class="p-3 border-t border-stone-100 bg-white flex justify-between items-center">
         <button onclick="addNewPage(false); closePageGridModal();" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 transition">
           <i data-lucide="plus" class="w-4 h-4"></i> Adicionar Página
@@ -540,9 +529,6 @@
   </div>
 
   <script>
-    // =========================================================================
-    // ESTADO DA APLICAÇÃO E HISTÓRICO (UNDO / REDO)
-    // =========================================================================
     const SHEET_WIDTH = 842;
     const SHEET_HEIGHT = 595;
     const STORAGE_KEY = 'album_recordacoes_v1';
@@ -574,22 +560,20 @@
     function undo() {
       if (undoStack.length === 0) return;
       redoStack.push(JSON.stringify(albumState));
-      const prevState = undoStack.pop();
-      albumState = JSON.parse(prevState);
+      albumState = JSON.parse(undoStack.pop());
       selectedItemId = null;
       renderAll();
-      saveToLocalStorage(false);
+      saveToLocalStorage();
       updateHistoryButtons();
     }
 
     function redo() {
       if (redoStack.length === 0) return;
       undoStack.push(JSON.stringify(albumState));
-      const nextState = redoStack.pop();
-      albumState = JSON.parse(nextState);
+      albumState = JSON.parse(redoStack.pop());
       selectedItemId = null;
       renderAll();
-      saveToLocalStorage(false);
+      saveToLocalStorage();
       updateHistoryButtons();
     }
 
@@ -601,7 +585,7 @@
     }
 
     // =========================================================================
-    // INICIALIZAÇÃO
+    // INICIALIZAÇÃO E TRAVA DE VIEWPORT ANDROID
     // =========================================================================
     window.addEventListener('DOMContentLoaded', () => {
       loadFromLocalStorage();
@@ -609,7 +593,8 @@
         initDefaultAlbum();
       }
       renderAll();
-      fitSheetToScreen();
+      // Pequeno atraso para garantir cálculo exato da área útil no Android
+      setTimeout(fitSheetToScreen, 100);
       setupDrawingCanvas();
       lucide.createIcons();
       updateHistoryButtons();
@@ -618,28 +603,18 @@
       titleInput.value = albumState.title;
       titleInput.addEventListener('input', (e) => {
         albumState.title = e.target.value || 'Meu Álbum de Recordações';
-        saveToLocalStorage(false);
+        saveToLocalStorage();
       });
 
       window.addEventListener('resize', fitSheetToScreen);
-      
-      // Atalhos de teclado (Delete, Ctrl+Z, Ctrl+Y)
-      window.addEventListener('keydown', (e) => {
-        const activeTag = document.activeElement.tagName.toLowerCase();
-        const isEditable = document.activeElement.isContentEditable;
-        if (activeTag === 'input' || activeTag === 'textarea' || isEditable) return;
+      window.addEventListener('orientationchange', () => setTimeout(fitSheetToScreen, 200));
 
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      // Bloqueia arraste elástico da janela no Android WebView
+      document.addEventListener('touchmove', (e) => {
+        if (!e.target.closest('#sideDrawer') && !e.target.closest('#pageGridContainer') && !e.target.closest('#contextToolbar') && !e.target.closest('#pageTabs')) {
           e.preventDefault();
-          if (e.shiftKey) redo();
-          else undo();
-        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
-          e.preventDefault();
-          redo();
-        } else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedItemId) {
-          deleteSelectedItem();
         }
-      });
+      }, { passive: false });
     });
 
     function initDefaultAlbum() {
@@ -720,7 +695,7 @@
                 y: 70,
                 width: 220,
                 rotation: 3,
-                content: 'Dica: Clique em "Fotos" na barra lateral para colar suas imagens aqui!',
+                content: 'Toque em "Fotos" para colar suas imagens aqui!',
                 fontFamily: "'Patrick Hand', cursive",
                 fontSize: 20,
                 color: '#422006',
@@ -778,7 +753,7 @@
       wrapper.style.width = `${item.width}px`;
       wrapper.style.transform = `rotate(${item.rotation || 0}deg)`;
 
-      // Seleciona ao clicar no item
+      // Seleciona ao tocar/clicar no item
       wrapper.addEventListener('mousedown', (e) => {
         if (isDrawMode) return;
         if (e.target.closest('.handle-resize') || e.target.closest('.handle-rotate') || e.target.closest('.handle-move')) return;
@@ -788,8 +763,15 @@
       wrapper.addEventListener('touchstart', (e) => {
         if (isDrawMode) return;
         if (e.target.closest('.handle-resize') || e.target.closest('.handle-rotate') || e.target.closest('.handle-move')) return;
+        
+        // Suporte a Gesto de Pinça (2 dedos) para redimensionar foto/item diretamente
+        if (e.touches.length === 2) {
+          selectItem(item.id);
+          startPinchResize(e, item, wrapper);
+          return;
+        }
         selectItem(item.id);
-      }, { passive: true });
+      }, { passive: false });
 
       if (item.type === 'photo') {
         const frameDiv = document.createElement('div');
@@ -810,9 +792,10 @@
           caption.addEventListener('focus', () => pushHistory());
           caption.addEventListener('input', (e) => {
             item.caption = e.target.innerText;
-            saveToLocalStorage(false);
+            saveToLocalStorage();
           });
           caption.addEventListener('mousedown', (e) => e.stopPropagation());
+          caption.addEventListener('touchstart', (e) => e.stopPropagation());
           frameDiv.appendChild(caption);
         }
 
@@ -831,8 +814,6 @@
         if (item.type === 'sticky') {
           textBox.style.backgroundColor = item.bgColor || '#fef08a';
           textBox.className = 'p-4 rounded-sm shadow-md outline-none cursor-text min-h-[110px]';
-        } else if (item.type === 'stamp') {
-          textBox.className = 'px-3 py-1.5 border-2 rounded-md font-bold tracking-widest uppercase outline-none cursor-text text-center';
         } else {
           textBox.style.backgroundColor = item.bgColor || 'transparent';
           textBox.className = 'p-2 rounded outline-none cursor-text min-h-[36px]';
@@ -841,7 +822,7 @@
         textBox.addEventListener('focus', () => pushHistory());
         textBox.addEventListener('input', (e) => {
           item.content = e.target.innerText;
-          saveToLocalStorage(false);
+          saveToLocalStorage();
         });
 
         wrapper.appendChild(textBox);
@@ -858,7 +839,7 @@
         stampBox.addEventListener('focus', () => pushHistory());
         stampBox.addEventListener('input', (e) => {
           item.content = e.target.innerText;
-          saveToLocalStorage(false);
+          saveToLocalStorage();
         });
         wrapper.appendChild(stampBox);
       }
@@ -870,30 +851,25 @@
         wrapper.appendChild(stickerDiv);
       }
 
-      // Alças de Controle quando selecionado
+      // Alças de Controle Ampliadas para Toque no Celular
       if (selectedItemId === item.id && !isDrawMode) {
-        // Alça de Movimentação Superior (Arraste Suave)
         const moveHandle = document.createElement('div');
         moveHandle.className = 'handle-move';
-        moveHandle.title = 'Arraste para mover o item';
-        moveHandle.innerHTML = `<i data-lucide="move" class="w-3.5 h-3.5"></i> Mover`;
+        moveHandle.innerHTML = `<i data-lucide="move" class="w-4 h-4"></i> Mover`;
         moveHandle.addEventListener('mousedown', (e) => startDrag(e, item, wrapper));
         moveHandle.addEventListener('touchstart', (e) => startDrag(e.touches[0], item, wrapper, true), { passive: false });
         wrapper.appendChild(moveHandle);
 
-        // Alça de Rotação
         const rotateHandle = document.createElement('div');
         rotateHandle.className = 'handle-rotate';
-        rotateHandle.title = 'Arraste para girar';
-        rotateHandle.innerHTML = `<i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>`;
+        rotateHandle.innerHTML = `<i data-lucide="rotate-cw" class="w-4 h-4"></i>`;
         rotateHandle.addEventListener('mousedown', (e) => startRotate(e, item, wrapper));
         rotateHandle.addEventListener('touchstart', (e) => startRotate(e.touches[0], item, wrapper, true), { passive: false });
         wrapper.appendChild(rotateHandle);
 
-        // Alça de Redimensionamento
         const resizeHandle = document.createElement('div');
         resizeHandle.className = 'handle-resize';
-        resizeHandle.title = 'Arraste para redimensionar';
+        resizeHandle.innerHTML = `<i data-lucide="maximize-2" class="w-4 h-4"></i>`;
         resizeHandle.addEventListener('mousedown', (e) => startResize(e, item, wrapper));
         resizeHandle.addEventListener('touchstart', (e) => startResize(e.touches[0], item, wrapper, true), { passive: false });
         wrapper.appendChild(resizeHandle);
@@ -918,8 +894,44 @@
     }
 
     // =========================================================================
-    // MANIPULAÇÃO COM GUIAS MAGNÉTICAS DE ALINHAMENTO
+    // MANIPULAÇÃO: ARRASTE, PINÇA (2 DEDOS), REDIMENSIONAMENTO E ROTAÇÃO
     // =========================================================================
+    function startPinchResize(startEvent, item, wrapper) {
+      startEvent.stopPropagation();
+      startEvent.preventDefault();
+      pushHistory();
+
+      const t1 = startEvent.touches[0];
+      const t2 = startEvent.touches[1];
+      const initialDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      const origWidth = item.width;
+
+      function onPinchMove(ev) {
+        if (ev.touches.length < 2) return;
+        ev.preventDefault();
+        const nt1 = ev.touches[0];
+        const nt2 = ev.touches[1];
+        const currentDist = Math.hypot(nt2.clientX - nt1.clientX, nt2.clientY - nt1.clientY);
+        const scale = currentDist / initialDist;
+        const newWidth = Math.max(50, Math.min(780, Math.round(origWidth * scale)));
+
+        item.width = newWidth;
+        wrapper.style.width = `${newWidth}px`;
+        if (item.type === 'sticker') {
+          wrapper.firstChild.style.fontSize = `${newWidth * 0.82}px`;
+        }
+      }
+
+      function onPinchEnd() {
+        window.removeEventListener('touchmove', onPinchMove);
+        window.removeEventListener('touchend', onPinchEnd);
+        saveToLocalStorage();
+      }
+
+      window.addEventListener('touchmove', onPinchMove, { passive: false });
+      window.addEventListener('touchend', onPinchEnd);
+    }
+
     function startDrag(startEvent, item, wrapper, isTouch = false) {
       if (startEvent.stopPropagation) startEvent.stopPropagation();
       if (!isTouch && startEvent.preventDefault) startEvent.preventDefault();
@@ -942,7 +954,6 @@
         let nextX = Math.round(origX + dx);
         let nextY = Math.round(origY + dy);
 
-        // Verifica alinhamento magnético ao centro da folha (842x595)
         const itemCenterX = nextX + item.width / 2;
         const itemCenterY = nextY + elHeight / 2;
         const sheetCenterX = SHEET_WIDTH / 2;
@@ -973,7 +984,7 @@
         window.removeEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
         guideV.classList.add('hidden');
         guideH.classList.add('hidden');
-        saveToLocalStorage(false);
+        saveToLocalStorage();
       }
 
       window.addEventListener(isTouch ? 'touchmove' : 'mousemove', onMove, { passive: false });
@@ -986,12 +997,16 @@
 
       pushHistory();
       const startX = startEvent.clientX;
+      const startY = startEvent.clientY;
       const origWidth = item.width;
 
       function onMove(ev) {
         const pt = isTouch ? ev.touches[0] : ev;
         const dx = (pt.clientX - startX) / currentZoom;
-        const newWidth = Math.max(45, Math.min(780, Math.round(origWidth + dx)));
+        const dy = (pt.clientY - startY) / currentZoom;
+        // Usa o maior deslocamento (horizontal ou diagonal) para facilitar no dedo
+        const delta = Math.abs(dx) > Math.abs(dy) ? dx : dy;
+        const newWidth = Math.max(50, Math.min(780, Math.round(origWidth + delta)));
         item.width = newWidth;
         wrapper.style.width = `${newWidth}px`;
         if (item.type === 'sticker') {
@@ -1002,11 +1017,21 @@
       function onEnd() {
         window.removeEventListener(isTouch ? 'touchmove' : 'mousemove', onMove);
         window.removeEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
-        saveToLocalStorage(false);
+        saveToLocalStorage();
       }
 
       window.addEventListener(isTouch ? 'touchmove' : 'mousemove', onMove, { passive: false });
       window.addEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
+    }
+
+    function adjustItemWidth(delta) {
+      const page = getCurrentPage();
+      const item = page.items.find(i => i.id === selectedItemId);
+      if (!item) return;
+      pushHistory();
+      item.width = Math.max(50, Math.min(780, item.width + delta));
+      renderAll();
+      saveToLocalStorage();
     }
 
     function startRotate(startEvent, item, wrapper, isTouch = false) {
@@ -1031,7 +1056,7 @@
       function onEnd() {
         window.removeEventListener(isTouch ? 'touchmove' : 'mousemove', onMove);
         window.removeEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
-        saveToLocalStorage(false);
+        saveToLocalStorage();
       }
 
       window.addEventListener(isTouch ? 'touchmove' : 'mousemove', onMove, { passive: false });
@@ -1053,8 +1078,14 @@
       canvas.addEventListener('mouseup', stopDrawing);
       canvas.addEventListener('mouseleave', stopDrawing);
 
-      canvas.addEventListener('touchstart', (e) => startDrawing(e.touches[0]), { passive: false });
-      canvas.addEventListener('touchmove', (e) => draw(e.touches[0]), { passive: false });
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startDrawing(e.touches[0]);
+      }, { passive: false });
+      canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        draw(e.touches[0]);
+      }, { passive: false });
       canvas.addEventListener('touchend', stopDrawing);
     }
 
@@ -1073,11 +1104,7 @@
       drawingCtx.lineJoin = 'round';
       drawingCtx.lineWidth = brushSize;
       drawingCtx.strokeStyle = isEraser ? 'rgba(0,0,0,1)' : brushColor;
-      if (isEraser) {
-        drawingCtx.globalCompositeOperation = 'destination-out';
-      } else {
-        drawingCtx.globalCompositeOperation = 'source-over';
-      }
+      drawingCtx.globalCompositeOperation = isEraser ? 'destination-out' : 'source-over';
     }
 
     function draw(e) {
@@ -1099,7 +1126,7 @@
       const page = getCurrentPage();
       if (page) {
         page.drawingData = canvas.toDataURL();
-        saveToLocalStorage(false);
+        saveToLocalStorage();
       }
     }
 
@@ -1109,9 +1136,7 @@
       ctx.clearRect(0, 0, SHEET_WIDTH, SHEET_HEIGHT);
       if (dataUrl) {
         const img = new Image();
-        img.onload = () => {
-          ctx.drawImage(img, 0, 0);
-        };
+        img.onload = () => ctx.drawImage(img, 0, 0);
         img.src = dataUrl;
       }
     }
@@ -1126,12 +1151,12 @@
         selectedItemId = null;
         renderAll();
         btn.classList.add('bg-amber-100', 'text-amber-800');
-        iconWrap.className = 'w-9 h-9 rounded-lg bg-amber-600 text-white flex items-center justify-center transition shadow-sm';
+        iconWrap.className = 'w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center transition shadow-sm';
         canvas.style.pointerEvents = 'auto';
         toggleDrawer('draw');
       } else {
         btn.classList.remove('bg-amber-100', 'text-amber-800');
-        iconWrap.className = 'w-9 h-9 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center transition';
+        iconWrap.className = 'w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center transition';
         canvas.style.pointerEvents = 'none';
         closeDrawer();
       }
@@ -1139,7 +1164,7 @@
     }
 
     // =========================================================================
-    // PAINEL LATERAL (DRAWERS: ADESIVOS, CARIMBOS, PAPEL, DESENHO)
+    // PAINEL LATERAL
     // =========================================================================
     function toggleDrawer(type) {
       const drawer = document.getElementById('sideDrawer');
@@ -1157,10 +1182,10 @@
           <div>
             <p class="text-xs font-semibold text-stone-600 mb-2">Carimbos de Data & Selos</p>
             <div class="flex flex-col gap-1.5">
-              <button onclick="addStampItem('${todayShort}')" class="w-full py-2 px-3 rounded-xl border-2 border-dashed border-red-700/60 text-red-700 font-serif font-bold text-xs tracking-widest hover:bg-red-50 transition">
+              <button onclick="addStampItem('${todayShort}'); closeDrawer();" class="w-full py-2 px-3 rounded-xl border-2 border-dashed border-red-700/60 text-red-700 font-serif font-bold text-xs tracking-widest hover:bg-red-50 transition">
                 ${todayShort}
               </button>
-              <button onclick="addStampItem('MOMENTO ESPECIAL')" class="w-full py-2 px-3 rounded-xl border-2 border-dashed border-amber-700/60 text-amber-800 font-serif font-bold text-xs tracking-widest hover:bg-amber-50 transition">
+              <button onclick="addStampItem('MOMENTO ESPECIAL'); closeDrawer();" class="w-full py-2 px-3 rounded-xl border-2 border-dashed border-amber-700/60 text-amber-800 font-serif font-bold text-xs tracking-widest hover:bg-amber-50 transition">
                 MOMENTO ESPECIAL
               </button>
             </div>
@@ -1168,7 +1193,7 @@
           <div>
             <p class="text-xs font-semibold text-stone-600 mb-2">Adesivos Ilustrados</p>
             <div class="grid grid-cols-4 gap-2">
-              ${emojis.map(em => `<button onclick="addSticker('${em}')" class="h-11 text-2xl bg-stone-50 hover:bg-amber-100 rounded-xl flex items-center justify-center transition">${em}</button>`).join('')}
+              ${emojis.map(em => `<button onclick="addSticker('${em}'); closeDrawer();" class="h-11 text-2xl bg-stone-50 hover:bg-amber-100 rounded-xl flex items-center justify-center transition">${em}</button>`).join('')}
             </div>
           </div>
         `;
@@ -1186,7 +1211,7 @@
         content.innerHTML = `
           <div class="flex flex-col gap-2">
             ${papers.map(p => `
-              <button onclick="setPaperStyle('${p.id}')" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium hover:bg-amber-50 border border-stone-200 flex items-center justify-between transition ${getCurrentPage().paper === p.id ? 'border-amber-600 bg-amber-50/50 text-amber-800' : 'text-stone-700'}">
+              <button onclick="setPaperStyle('${p.id}'); closeDrawer();" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium hover:bg-amber-50 border border-stone-200 flex items-center justify-between transition ${getCurrentPage().paper === p.id ? 'border-amber-600 bg-amber-50/50 text-amber-800' : 'text-stone-700'}">
                 <span>${p.label}</span>
                 <div class="w-4 h-4 rounded-full border border-stone-300 ${p.id}"></div>
               </button>
@@ -1198,7 +1223,7 @@
         content.innerHTML = `
           <div class="flex flex-col gap-3">
             <label class="text-xs font-semibold text-stone-600">Cor do Pincel</label>
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-wrap">
               <button onclick="setBrushColor('#1c1917')" class="w-7 h-7 rounded-full bg-stone-900 border-2 border-white shadow-xs"></button>
               <button onclick="setBrushColor('#b91c1c')" class="w-7 h-7 rounded-full bg-red-700 border-2 border-white shadow-xs"></button>
               <button onclick="setBrushColor('#1d4ed8')" class="w-7 h-7 rounded-full bg-blue-700 border-2 border-white shadow-xs"></button>
@@ -1206,13 +1231,13 @@
               <button onclick="setBrushColor('#b45309')" class="w-7 h-7 rounded-full bg-amber-700 border-2 border-white shadow-xs"></button>
               <button onclick="setBrushColor('#7e22ce')" class="w-7 h-7 rounded-full bg-purple-700 border-2 border-white shadow-xs"></button>
             </div>
-            <label class="text-xs font-semibold text-stone-600 mt-2">Espessura (${brushSize}px)</label>
+            <label class="text-xs font-semibold text-stone-600 mt-1">Espessura (${brushSize}px)</label>
             <input type="range" min="2" max="24" value="${brushSize}" oninput="setBrushSize(this.value)" class="accent-amber-600 cursor-pointer" />
-            <div class="flex gap-2 mt-2">
+            <div class="flex gap-2 mt-1">
               <button onclick="setEraser(false)" class="flex-1 py-1.5 rounded-lg text-xs font-medium border ${!isEraser ? 'bg-amber-600 text-white border-amber-600' : 'border-stone-200 text-stone-700'}">Pincel</button>
               <button onclick="setEraser(true)" class="flex-1 py-1.5 rounded-lg text-xs font-medium border ${isEraser ? 'bg-amber-600 text-white border-amber-600' : 'border-stone-200 text-stone-700'}">Borracha</button>
             </div>
-            <button onclick="clearCanvasDrawing()" class="mt-2 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium transition">Limpar Desenhos da Página</button>
+            <button onclick="clearCanvasDrawing()" class="mt-2 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium transition">Limpar Desenhos</button>
           </div>
         `;
       }
@@ -1225,7 +1250,7 @@
     }
 
     // =========================================================================
-    // ADIÇÃO DE ELEMENTOS AO ÁLBUM
+    // ADIÇÃO DE ELEMENTOS
     // =========================================================================
     function handlePhotoUpload(e) {
       const files = e.target.files;
@@ -1240,7 +1265,7 @@
             type: 'photo',
             x: 80 + (index * 30) % 300,
             y: 80 + (index * 30) % 180,
-            width: 320,
+            width: 300,
             rotation: (Math.random() * 6 - 3),
             src: event.target.result,
             frame: 'frame-polaroid',
@@ -1250,7 +1275,7 @@
           getCurrentPage().items.push(newItem);
           selectItem(newItem.id);
           renderAll();
-          saveToLocalStorage(false);
+          saveToLocalStorage();
         };
         reader.readAsDataURL(file);
       });
@@ -1276,7 +1301,7 @@
       getCurrentPage().items.push(newItem);
       selectItem(newItem.id);
       renderAll();
-      saveToLocalStorage(false);
+      saveToLocalStorage();
     }
 
     function addStickyNote() {
@@ -1298,7 +1323,7 @@
       getCurrentPage().items.push(newItem);
       selectItem(newItem.id);
       renderAll();
-      saveToLocalStorage(false);
+      saveToLocalStorage();
     }
 
     function addStampItem(text) {
@@ -1317,7 +1342,7 @@
       getCurrentPage().items.push(newItem);
       selectItem(newItem.id);
       renderAll();
-      saveToLocalStorage(false);
+      saveToLocalStorage();
     }
 
     function addSticker(emoji) {
@@ -1334,35 +1359,26 @@
       getCurrentPage().items.push(newItem);
       selectItem(newItem.id);
       renderAll();
-      saveToLocalStorage(false);
+      saveToLocalStorage();
     }
 
     function setPaperStyle(styleId) {
       pushHistory();
       getCurrentPage().paper = styleId;
       renderAll();
-      saveToLocalStorage(false);
+      saveToLocalStorage();
     }
 
-    function setBrushColor(color) {
-      brushColor = color;
-      isEraser = false;
-    }
-
-    function setBrushSize(size) {
-      brushSize = parseInt(size);
-    }
-
-    function setEraser(val) {
-      isEraser = val;
-    }
+    function setBrushColor(color) { brushColor = color; isEraser = false; }
+    function setBrushSize(size) { brushSize = parseInt(size); }
+    function setEraser(val) { isEraser = val; }
 
     function clearCanvasDrawing() {
       pushHistory();
       const page = getCurrentPage();
       page.drawingData = null;
       loadDrawingToCanvas(null);
-      saveToLocalStorage(false);
+      saveToLocalStorage();
     }
 
     function deleteSelectedItem() {
@@ -1372,30 +1388,19 @@
       page.items = page.items.filter(i => i.id !== selectedItemId);
       selectedItemId = null;
       renderAll();
-      saveToLocalStorage(false);
+      saveToLocalStorage();
     }
 
     // =========================================================================
-    // BARRA CONTEXTUAL DO ELEMENTO SELECIONADO
+    // BARRA CONTEXTUAL COM CONTROLE DE TAMANHO DIRETO (+ / -)
     // =========================================================================
     function updateContextToolbar() {
       const toolbar = document.getElementById('contextToolbar');
       if (!selectedItemId) {
-        if (!isDrawMode) {
-          toolbar.innerHTML = `
-            <span class="text-xs text-stone-500 flex items-center gap-1.5">
-              <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-amber-600"></i>
-              Clique em um elemento para selecioná-lo, movê-lo pela alça superior ou redimensioná-lo.
-            </span>
-          `;
-        } else {
-          toolbar.innerHTML = `
-            <span class="text-xs font-medium text-amber-700 flex items-center gap-1.5">
-              <i data-lucide="pen-tool" class="w-3.5 h-3.5"></i>
-              Modo Desenho Livre Ativo. Desenhe diretamente sobre a folha.
-            </span>
-          `;
-        }
+        toolbar.innerHTML = !isDrawMode
+          ? `<span class="text-xs text-stone-500 flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-amber-600"></i>Toque em um item para mover ou redimensionar (ou use 2 dedos).</span>`
+          : `<span class="text-xs font-medium text-amber-700 flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="pen-tool" class="w-3.5 h-3.5"></i>Modo Desenho Livre Ativo.</span>`;
+        lucide.createIcons();
         return;
       }
 
@@ -1404,8 +1409,14 @@
       if (!item) return;
 
       let html = `
-        <div class="flex items-center gap-2 overflow-x-auto py-1">
-          <button onclick="bringToFront()" class="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium flex items-center gap-1 transition shrink-0" title="Avançar camada">
+        <div class="flex items-center gap-1.5 py-0.5">
+          <!-- Botões rápidos de tamanho do item (facilita muito no celular) -->
+          <div class="flex items-center bg-amber-50 rounded-lg p-0.5 border border-amber-200 shrink-0" title="Tamanho do Item">
+            <button onclick="adjustItemWidth(-35)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold text-amber-800">- Tam</button>
+            <button onclick="adjustItemWidth(35)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold text-amber-800">+ Tam</button>
+          </div>
+
+          <button onclick="bringToFront()" class="px-2 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium flex items-center gap-1 transition shrink-0">
             <i data-lucide="layers" class="w-3.5 h-3.5"></i> Frente
           </button>
       `;
@@ -1414,20 +1425,20 @@
         html += `
           <select onchange="changePhotoFrame(this.value)" class="bg-stone-100 border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 outline-none shrink-0">
             <option value="frame-polaroid" ${item.frame === 'frame-polaroid' ? 'selected' : ''}>Polaroid</option>
-            <option value="frame-classic" ${item.frame === 'frame-classic' ? 'selected' : ''}>Moldura Clássica</option>
+            <option value="frame-classic" ${item.frame === 'frame-classic' ? 'selected' : ''}>Clássica</option>
             <option value="frame-rounded" ${item.frame === 'frame-rounded' ? 'selected' : ''}>Arredondada</option>
             <option value="frame-clipped" ${item.frame === 'frame-clipped' ? 'selected' : ''}>Com Clipe</option>
             <option value="frame-taped" ${item.frame === 'frame-taped' ? 'selected' : ''}>Fita Amarela</option>
             <option value="frame-taped-pink" ${item.frame === 'frame-taped-pink' ? 'selected' : ''}>Fita Rosa</option>
             <option value="frame-taped-blue" ${item.frame === 'frame-taped-blue' ? 'selected' : ''}>Fita Azul</option>
           </select>
-          <select onchange="changePhotoFilter(this.value)" class="bg-stone-100 border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 outline-none shrink-0" title="Filtro da Foto">
-            <option value="filter-none" ${(item.filter || 'filter-none') === 'filter-none' ? 'selected' : ''}>Cor Original</option>
-            <option value="filter-vintage" ${item.filter === 'filter-vintage' ? 'selected' : ''}>Filtro Vintage</option>
-            <option value="filter-bw" ${item.filter === 'filter-bw' ? 'selected' : ''}>Preto e Branco</option>
-            <option value="filter-sepia" ${item.filter === 'filter-sepia' ? 'selected' : ''}>Sépia Retrô</option>
-            <option value="filter-vivid" ${item.filter === 'filter-vivid' ? 'selected' : ''}>Cores Vivas</option>
-            <option value="filter-soft" ${item.filter === 'filter-soft' ? 'selected' : ''}>Suave Pastel</option>
+          <select onchange="changePhotoFilter(this.value)" class="bg-stone-100 border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 outline-none shrink-0">
+            <option value="filter-none" ${(item.filter || 'filter-none') === 'filter-none' ? 'selected' : ''}>Original</option>
+            <option value="filter-vintage" ${item.filter === 'filter-vintage' ? 'selected' : ''}>Vintage</option>
+            <option value="filter-bw" ${item.filter === 'filter-bw' ? 'selected' : ''}>P&B</option>
+            <option value="filter-sepia" ${item.filter === 'filter-sepia' ? 'selected' : ''}>Sépia</option>
+            <option value="filter-vivid" ${item.filter === 'filter-vivid' ? 'selected' : ''}>Vivas</option>
+            <option value="filter-soft" ${item.filter === 'filter-soft' ? 'selected' : ''}>Suave</option>
           </select>
         `;
       } else if (item.type === 'text' || item.type === 'sticky') {
@@ -1440,11 +1451,10 @@
             <option value="'Inter', sans-serif" ${item.fontFamily.includes('Inter') ? 'selected' : ''}>Inter</option>
           </select>
           <div class="flex items-center gap-1 bg-stone-100 rounded-lg p-0.5 border border-stone-200 shrink-0">
-            <button onclick="adjustFontSize(-2)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold">-</button>
-            <span class="text-xs font-medium px-1">${item.fontSize || 28}px</span>
-            <button onclick="adjustFontSize(2)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold">+</button>
+            <button onclick="adjustFontSize(-2)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold">-A</button>
+            <button onclick="adjustFontSize(2)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold">+A</button>
           </div>
-          <input type="color" value="${item.color || '#292524'}" onchange="changeTextColor(this.value)" class="w-6 h-6 rounded border-0 cursor-pointer bg-transparent shrink-0" title="Cor do Texto" />
+          <input type="color" value="${item.color || '#292524'}" onchange="changeTextColor(this.value)" class="w-6 h-6 rounded border-0 cursor-pointer bg-transparent shrink-0" />
         `;
         if (item.type === 'sticky') {
           html += `
@@ -1459,18 +1469,17 @@
         }
       } else if (item.type === 'stamp') {
         html += `
-          <input type="color" value="${item.color || '#b91c1c'}" onchange="changeTextColor(this.value)" class="w-6 h-6 rounded border-0 cursor-pointer bg-transparent shrink-0" title="Cor do Carimbo" />
+          <input type="color" value="${item.color || '#b91c1c'}" onchange="changeTextColor(this.value)" class="w-6 h-6 rounded border-0 cursor-pointer bg-transparent shrink-0" />
           <div class="flex items-center gap-1 bg-stone-100 rounded-lg p-0.5 border border-stone-200 shrink-0">
-            <button onclick="adjustFontSize(-2)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold">-</button>
-            <span class="text-xs font-medium px-1">${item.fontSize || 16}px</span>
-            <button onclick="adjustFontSize(2)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold">+</button>
+            <button onclick="adjustFontSize(-2)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold">-A</button>
+            <button onclick="adjustFontSize(2)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold">+A</button>
           </div>
         `;
       }
 
       html += `
           <button onclick="deleteSelectedItem()" class="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium flex items-center gap-1 transition ml-auto shrink-0">
-            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Excluir
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
           </button>
         </div>
       `;
@@ -1487,78 +1496,48 @@
         const item = page.items.splice(idx, 1)[0];
         page.items.push(item);
         renderAll();
-        saveToLocalStorage(false);
+        saveToLocalStorage();
       }
     }
 
     function changePhotoFrame(frameClass) {
       const page = getCurrentPage();
       const item = page.items.find(i => i.id === selectedItemId);
-      if (item) {
-        pushHistory();
-        item.frame = frameClass;
-        renderAll();
-        saveToLocalStorage(false);
-      }
+      if (item) { pushHistory(); item.frame = frameClass; renderAll(); saveToLocalStorage(); }
     }
 
     function changePhotoFilter(filterClass) {
       const page = getCurrentPage();
       const item = page.items.find(i => i.id === selectedItemId);
-      if (item) {
-        pushHistory();
-        item.filter = filterClass;
-        renderAll();
-        saveToLocalStorage(false);
-      }
+      if (item) { pushHistory(); item.filter = filterClass; renderAll(); saveToLocalStorage(); }
     }
 
     function changeFont(font) {
       const page = getCurrentPage();
       const item = page.items.find(i => i.id === selectedItemId);
-      if (item) {
-        pushHistory();
-        item.fontFamily = font;
-        renderAll();
-        saveToLocalStorage(false);
-      }
+      if (item) { pushHistory(); item.fontFamily = font; renderAll(); saveToLocalStorage(); }
     }
 
     function adjustFontSize(delta) {
       const page = getCurrentPage();
       const item = page.items.find(i => i.id === selectedItemId);
-      if (item) {
-        pushHistory();
-        item.fontSize = Math.max(12, Math.min(96, (item.fontSize || 28) + delta));
-        renderAll();
-        saveToLocalStorage(false);
-      }
+      if (item) { pushHistory(); item.fontSize = Math.max(12, Math.min(96, (item.fontSize || 28) + delta)); renderAll(); saveToLocalStorage(); }
     }
 
     function changeTextColor(color) {
       const page = getCurrentPage();
       const item = page.items.find(i => i.id === selectedItemId);
-      if (item) {
-        pushHistory();
-        item.color = color;
-        renderAll();
-        saveToLocalStorage(false);
-      }
+      if (item) { pushHistory(); item.color = color; renderAll(); saveToLocalStorage(); }
     }
 
     function changeStickyBg(color) {
       const page = getCurrentPage();
       const item = page.items.find(i => i.id === selectedItemId);
-      if (item) {
-        pushHistory();
-        item.bgColor = color;
-        renderAll();
-        saveToLocalStorage(false);
-      }
+      if (item) { pushHistory(); item.bgColor = color; renderAll(); saveToLocalStorage(); }
     }
 
     // =========================================================================
-    // NAVEGAÇÃO E VISÃO GERAL EM GRADE DAS PÁGINAS
+    // NAVEGAÇÃO DE PÁGINAS E VISÃO GERAL
     // =========================================================================
     function renderPageTabs() {
       const container = document.getElementById('pageTabs');
@@ -1567,7 +1546,7 @@
       albumState.pages.forEach((p, idx) => {
         const isSelected = idx === albumState.currentPageIndex;
         const btn = document.createElement('button');
-        btn.className = `px-2.5 py-1 rounded-xl text-xs font-medium transition flex items-center gap-1 shrink-0 ${isSelected ? 'bg-amber-600 text-white shadow-sm' : 'bg-stone-100 hover:bg-stone-200 text-stone-700'}`;
+        btn.className = `px-2.5 py-1 rounded-xl text-xs font-medium transition flex items-center shrink-0 ${isSelected ? 'bg-amber-600 text-white shadow-sm' : 'bg-stone-100 hover:bg-stone-200 text-stone-700'}`;
         btn.innerHTML = `<span>${p.isCover ? 'Capa' : idx}</span>`;
         btn.onclick = () => {
           albumState.currentPageIndex = idx;
@@ -1589,7 +1568,7 @@
       albumState.pages.forEach((p, idx) => {
         const isCurrent = idx === albumState.currentPageIndex;
         const card = document.createElement('div');
-        card.className = `rounded-xl border-2 p-2.5 bg-white shadow-xs flex flex-col gap-2 transition ${isCurrent ? 'border-amber-600 ring-2 ring-amber-600/20' : 'border-stone-200 hover:border-stone-300'}`;
+        card.className = `rounded-xl border-2 p-2.5 bg-white shadow-xs flex flex-col gap-2 transition ${isCurrent ? 'border-amber-600 ring-2 ring-amber-600/20' : 'border-stone-200'}`;
         
         const preview = document.createElement('div');
         preview.className = `w-full aspect-[842/595] rounded border border-stone-200 relative overflow-hidden cursor-pointer flex items-center justify-center ${p.paper}`;
@@ -1601,17 +1580,17 @@
         };
         
         const infoText = document.createElement('span');
-        infoText.className = `text-xs font-semibold px-2 py-1 rounded bg-black/40 text-white backdrop-blur-xs`;
+        infoText.className = `text-xs font-semibold px-2 py-1 rounded bg-black/40 text-white`;
         infoText.textContent = `${p.items.length} ${p.items.length === 1 ? 'item' : 'itens'}`;
         preview.appendChild(infoText);
 
         const footer = document.createElement('div');
         footer.className = 'flex items-center justify-between text-xs font-medium text-stone-700 pt-1';
         footer.innerHTML = `
-          <span>${p.isCover ? 'Capa do Álbum' : 'Página ' + idx}</span>
+          <span>${p.isCover ? 'Capa' : 'Pág. ' + idx}</span>
           <div class="flex items-center gap-1">
-            ${idx > 0 ? `<button onclick="movePage(${idx}, -1)" class="p-1 hover:bg-stone-100 rounded text-stone-500" title="Mover para esquerda"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i></button>` : ''}
-            ${idx < albumState.pages.length - 1 ? `<button onclick="movePage(${idx}, 1)" class="p-1 hover:bg-stone-100 rounded text-stone-500" title="Mover para direita"><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></button>` : ''}
+            ${idx > 0 ? `<button onclick="movePage(${idx}, -1)" class="p-1 hover:bg-stone-100 rounded text-stone-500"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i></button>` : ''}
+            ${idx < albumState.pages.length - 1 ? `<button onclick="movePage(${idx}, 1)" class="p-1 hover:bg-stone-100 rounded text-stone-500"><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></button>` : ''}
           </div>
         `;
 
@@ -1637,7 +1616,7 @@
       albumState.pages[targetIdx] = temp;
       albumState.currentPageIndex = targetIdx;
       renderAll();
-      saveToLocalStorage(false);
+      saveToLocalStorage();
       openPageGridModal();
     }
 
@@ -1670,7 +1649,7 @@
       albumState.currentPageIndex = albumState.pages.length - 1;
       selectedItemId = null;
       renderAll();
-      saveToLocalStorage(false);
+      saveToLocalStorage();
     }
 
     function deleteCurrentPage() {
@@ -1686,22 +1665,23 @@
         }
         selectedItemId = null;
         renderAll();
-        saveToLocalStorage(false);
+        saveToLocalStorage();
       });
     }
 
     // =========================================================================
-    // ZOOM E AJUSTE DE TELA
+    // ZOOM E AJUSTE DE TELA EXATO
     // =========================================================================
     function adjustZoom(delta) {
-      currentZoom = Math.max(0.4, Math.min(2.0, parseFloat((currentZoom + delta).toFixed(1))));
+      currentZoom = Math.max(0.25, Math.min(2.0, parseFloat((currentZoom + delta).toFixed(2))));
       applyZoom();
     }
 
     function fitSheetToScreen() {
       const viewport = document.getElementById('canvasViewport');
-      const availableWidth = viewport.clientWidth - 32;
-      const availableHeight = viewport.clientHeight - 32;
+      if (!viewport) return;
+      const availableWidth = viewport.clientWidth - 16;
+      const availableHeight = viewport.clientHeight - 16;
 
       const scaleX = availableWidth / SHEET_WIDTH;
       const scaleY = availableHeight / SHEET_HEIGHT;
@@ -1750,7 +1730,6 @@
               text: 'Confira esta página do meu álbum de recordações!'
             });
           } else {
-            // Fallback: Download direto da imagem caso o navegador não suporte Web Share Files
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -1774,10 +1753,10 @@
     function saveToLocalStorage() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(albumState));
       const status = document.getElementById('saveStatus');
-      status.textContent = 'Salvo automaticamente';
+      status.textContent = 'Salvo';
       setTimeout(() => {
-        if (status.textContent === 'Salvo automaticamente') status.textContent = '';
-      }, 2500);
+        if (status.textContent === 'Salvo') status.textContent = '';
+      }, 2000);
     }
 
     function loadFromLocalStorage() {
@@ -1815,7 +1794,7 @@
             albumState.currentPageIndex = 0;
             selectedItemId = null;
             renderAll();
-            saveToLocalStorage(false);
+            saveToLocalStorage();
             showModal('Sucesso', 'Álbum importado com sucesso!');
           } else {
             showModal('Erro', 'Arquivo de backup inválido.');
@@ -1836,7 +1815,7 @@
         document.getElementById('albumTitleInput').value = albumState.title;
         selectedItemId = null;
         renderAll();
-        saveToLocalStorage(false);
+        saveToLocalStorage();
       });
     }
 
