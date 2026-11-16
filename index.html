@@ -214,17 +214,21 @@
       <div id="drawerContent" class="flex flex-col gap-3"></div>
     </div>
 
-    <!-- Área do Canvas -->
+    <!-- Área do Canvas com Pinch-to-Zoom Global (Dois Dedos) -->
     <main class="flex-1 flex flex-col overflow-hidden bg-stone-200/90 relative min-w-0">
       <div id="contextToolbar" class="h-11 bg-white/95 backdrop-blur border-b border-stone-200 px-3 flex items-center gap-2 overflow-x-auto shrink-0 z-10">
         <span class="text-xs text-stone-500 flex items-center gap-1.5 whitespace-nowrap">
           <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-amber-600"></i>
-          Toque em um item para mover ou redimensionar (ou use 2 dedos).
+          Toque em um item para mover ou redimensionar (ou use 2 dedos na página para zoom).
         </span>
       </div>
 
-      <div id="canvasViewport" class="flex-1 overflow-hidden flex items-center justify-center p-2 sm:p-6 relative touch-none" onmousedown="handleViewportClick(event)" ontouchstart="handleViewportClick(event)">
-        <div id="paperWrapper" class="relative transition-transform duration-100 origin-center shrink-0">
+      <div id="canvasViewport" class="flex-1 overflow-hidden flex items-center justify-center p-2 sm:p-6 relative touch-none" 
+           onmousedown="handleViewportClick(event)" 
+           ontouchstart="handleViewportTouchStart(event)" 
+           ontouchmove="handleViewportTouchMove(event)" 
+           ontouchend="handleViewportTouchEnd(event)">
+        <div id="paperWrapper" class="relative transition-transform duration-75 origin-center shrink-0">
           <div id="paperSheet" class="w-[842px] h-[595px] relative overflow-hidden rounded-sm sheet-shadow paper-cream transition-colors duration-300">
             <div id="snapGuideV" class="snap-guide-v hidden"></div>
             <div id="snapGuideH" class="snap-guide-h hidden"></div>
@@ -288,6 +292,42 @@
     let undoStack = [], redoStack = [];
     const MAX_HISTORY = 25;
     let selectedItemId = null, currentZoom = 1, isDrawMode = false, brushColor = '#1c1917', brushSize = 4, isEraser = false;
+
+    // Controle de Pinch-to-Zoom Global (Dois Dedos)
+    let globalPinchInitialDist = null;
+    let globalPinchInitialZoom = 1;
+
+    function handleViewportTouchStart(e) {
+      if (e.touches.length === 2 && !selectedItemId) {
+        e.preventDefault();
+        globalPinchInitialDist = Math.hypot(
+          e.touches[1].clientX - e.touches[0].clientX,
+          e.touches[1].clientY - e.touches[0].clientY
+        );
+        globalPinchInitialZoom = currentZoom;
+      } else if (e.target.id === 'canvasViewport' || e.target.id === 'paperSheet' || e.target.id === 'elementsLayer') {
+        if (selectedItemId) { selectedItemId = null; renderAll(); }
+      }
+    }
+
+    function handleViewportTouchMove(e) {
+      if (e.touches.length === 2 && globalPinchInitialDist !== null && !selectedItemId) {
+        e.preventDefault();
+        const currentDist = Math.hypot(
+          e.touches[1].clientX - e.touches[0].clientX,
+          e.touches[1].clientY - e.touches[0].clientY
+        );
+        const factor = currentDist / globalPinchInitialDist;
+        currentZoom = Math.max(0.25, Math.min(2.5, parseFloat((globalPinchInitialZoom * factor).toFixed(2))));
+        applyZoom();
+      }
+    }
+
+    function handleViewportTouchEnd(e) {
+      if (e.touches.length < 2) {
+        globalPinchInitialDist = null;
+      }
+    }
 
     function pushHistory() {
       undoStack.push(JSON.stringify(albumState));
@@ -755,7 +795,7 @@
       const toolbar = document.getElementById('contextToolbar');
       if (!selectedItemId) {
         toolbar.innerHTML = !isDrawMode
-          ? `<span class="text-xs text-stone-500 flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-amber-600"></i>Toque em um item para mover ou redimensionar (ou use 2 dedos).</span>`
+          ? `<span class="text-xs text-stone-500 flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-amber-600"></i>Toque em um item para mover ou redimensionar (ou use 2 dedos na página para zoom).</span>`
           : `<span class="text-xs font-medium text-amber-700 flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="pen-tool" class="w-3.5 h-3.5"></i>Modo Desenho Livre Ativo.</span>`;
         lucide.createIcons(); return;
       }
@@ -879,7 +919,7 @@
       });
     }
 
-    function adjustZoom(delta) { currentZoom = Math.max(0.25, Math.min(2.0, parseFloat((currentZoom + delta).toFixed(2)))); applyZoom(); }
+    function adjustZoom(delta) { currentZoom = Math.max(0.25, Math.min(2.5, parseFloat((currentZoom + delta).toFixed(2)))); applyZoom(); }
     function fitSheetToScreen() {
       const viewport = document.getElementById('canvasViewport'); if (!viewport) return;
       currentZoom = parseFloat(Math.min((viewport.clientWidth - 16) / SHEET_WIDTH, (viewport.clientHeight - 16) / SHEET_HEIGHT, 1.2).toFixed(2));
@@ -978,15 +1018,16 @@
         for (let i = 0; i < albumState.pages.length; i++) {
           albumState.currentPageIndex = i; 
           renderAll(); 
-          await new Promise(r => setTimeout(r, 350));
+          await new Promise(r => setTimeout(r, 400));
           const canvasImg = await html2canvas(document.getElementById('paperSheet'), { scale: 2, useCORS: true, allowTaint: true, logging: false });
           if (i > 0) pdf.addPage([SHEET_WIDTH, SHEET_HEIGHT], 'landscape');
           pdf.addImage(canvasImg.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, SHEET_WIDTH, SHEET_HEIGHT);
         }
         
-        const pdfBlob = pdf.output('blob');
+        const pdfOutput = pdf.output('arraybuffer');
+        const blob = new Blob([pdfOutput], { type: 'application/pdf' });
         const fileName = `${albumState.title.replace(/\s+/g, '_')}.pdf`;
-        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+        const file = new File([blob], fileName, { type: 'application/pdf' });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
@@ -995,7 +1036,16 @@
             text: 'Aqui está o PDF do meu Scrapbook Digital!'
           });
         } else {
-          pdf.save(fileName);
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 500);
         }
       } catch(err) { 
         console.error('Erro ao gerar PDF:', err);
