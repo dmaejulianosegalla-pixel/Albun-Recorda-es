@@ -954,37 +954,6 @@
     function saveToLocalStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(albumState)); }
     function loadFromLocalStorage() { const data = localStorage.getItem(STORAGE_KEY); if (data) { try { albumState = JSON.parse(data); } catch(e){} } }
 
-    async function exportProjectJSON() {
-      try {
-        const jsonStr = JSON.stringify(albumState, null, 2);
-        const fileName = `${albumState.title.replace(/\s+/g, '_')}_backup.json`;
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const file = new File([blob], fileName, { type: 'application/json' });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: 'Backup do Álbum',
-            text: 'Arquivo de backup JSON do Scrapbook Digital'
-          });
-        } else {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }, 500);
-        }
-      } catch (err) {
-        console.error('Erro ao exportar JSON:', err);
-        showModal('Erro', 'Não foi possível exportar o backup.');
-      }
-    }
-
     function importProjectJSON(e) {
       const file = e.target.files[0]; if (!file) return;
       const reader = new FileReader();
@@ -1004,11 +973,62 @@
       });
     }
 
+    // Solução Definitiva para Exportar e Salvar arquivos no Android (APK) e Web
+    async function salvarOuCompartilharArquivo(blob, fileName, mimeType) {
+      try {
+        const file = new File([blob], fileName, { type: mimeType });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'Scrapbook Digital',
+            text: `Aqui está o seu arquivo: ${fileName}`
+          });
+          return;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 1000);
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        console.error('Erro ao salvar/compartilhar arquivo:', err);
+        showModal('Erro', 'Não foi possível exportar o arquivo neste dispositivo.');
+      }
+    }
+
+    async function exportProjectJSON() {
+      try {
+        const titulo = (albumState.title || 'Meu_Album').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_');
+        const fileName = `${titulo}_backup.json`;
+        const jsonStr = JSON.stringify(albumState, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+
+        await salvarOuCompartilharArquivo(blob, fileName, 'application/json');
+      } catch (err) {
+        console.error('Erro ao exportar JSON:', err);
+        showModal('Erro', 'Não foi possível exportar o backup.');
+      }
+    }
+
     async function exportToPDF() {
       const overlay = document.getElementById('pdfOverlay'); 
       document.getElementById('overlayTitle').textContent = 'Gerando PDF...';
-      overlay.classList.remove('hidden'); overlay.classList.add('flex'); 
-      selectedItemId = null; renderAll(); document.body.classList.add('exporting-mode');
+      overlay.classList.remove('hidden'); 
+      overlay.classList.add('flex'); 
+      
+      selectedItemId = null; 
+      renderAll(); 
+      document.body.classList.add('exporting-mode');
+      
+      const titulo = (albumState.title || 'Meu_Album').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_');
+      const fileName = `${titulo}.pdf`;
       
       const { jsPDF } = window.jspdf; 
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [SHEET_WIDTH, SHEET_HEIGHT] });
@@ -1019,29 +1039,20 @@
           albumState.currentPageIndex = i; 
           renderAll(); 
           await new Promise(r => setTimeout(r, 400));
-          const canvasImg = await html2canvas(document.getElementById('paperSheet'), { scale: 2, useCORS: true, allowTaint: true, logging: false });
+          
+          const canvasImg = await html2canvas(document.getElementById('paperSheet'), { 
+            scale: 2, 
+            useCORS: true, 
+            allowTaint: true, 
+            logging: false 
+          });
+          
           if (i > 0) pdf.addPage([SHEET_WIDTH, SHEET_HEIGHT], 'landscape');
           pdf.addImage(canvasImg.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, SHEET_WIDTH, SHEET_HEIGHT);
         }
         
-        const fileName = `${albumState.title.replace(/\s+/g, '_')}.pdf`;
-        const pdfDataUri = pdf.output('datauristring');
-        
-        if (navigator.canShare) {
-          const blob = pdf.output('blob');
-          const file = new File([blob], fileName, { type: 'application/pdf' });
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: albumState.title, text: 'Meu Álbum em PDF' });
-            return;
-          }
-        }
-        
-        const a = document.createElement('a');
-        a.href = pdfDataUri;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => { document.body.removeChild(a); }, 500);
+        const pdfBlob = pdf.output('blob');
+        await salvarOuCompartilharArquivo(pdfBlob, fileName, 'application/pdf');
 
       } catch(err) { 
         console.error('Erro ao gerar PDF:', err);
