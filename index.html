@@ -423,7 +423,12 @@
       renderAll();
       setTimeout(fitSheetToScreen, 100);
       setupDrawingCanvas();
-      lucide.createIcons();
+      
+      // Garante a renderização dos ícones do Lucide no WebView offline
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+
       updateHistoryButtons();
 
       const titleInput = document.getElementById('albumTitleInput');
@@ -481,7 +486,10 @@
       loadDrawingToCanvas(page.drawingData);
       updateNavigationButtons();
       updateContextToolbar();
-      lucide.createIcons();
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
     }
 
     function createDOMElementForItem(item) {
@@ -788,6 +796,9 @@
           <button onclick="clearCanvasDrawing()" class="mt-2 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium transition">Limpar Desenhos</button></div>
         `;
       }
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
     }
 
     function closeDrawer() { document.getElementById('sideDrawer').classList.add('hidden'); document.getElementById('sideDrawer').classList.remove('flex'); }
@@ -900,7 +911,8 @@
         toolbar.innerHTML = !isDrawMode
           ? `<span class="text-xs text-stone-500 flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-amber-600"></i>Toque em um item para mover ou redimensionar (ou use 2 dedos na página para zoom).</span>`
           : `<span class="text-xs font-medium text-amber-700 flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="pen-tool" class="w-3.5 h-3.5"></i>Modo Desenho Livre Ativo.</span>`;
-        lucide.createIcons(); return;
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+        return;
       }
       const page = getCurrentPage(), item = page.items.find(i => i.id === selectedItemId);
       if (!item) return;
@@ -970,7 +982,8 @@
         `;
       }
       html += `<button onclick="deleteSelectedItem()" class="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium flex items-center gap-1 transition ml-auto shrink-0"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>`;
-      toolbar.innerHTML = html; lucide.createIcons();
+      toolbar.innerHTML = html; 
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
 
     function bringToFront() {
@@ -1003,7 +1016,8 @@
         card.appendChild(preview);
         container.appendChild(card);
       });
-      document.getElementById('pageGridModal').classList.remove('hidden'); lucide.createIcons();
+      document.getElementById('pageGridModal').classList.remove('hidden'); 
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     function closePageGridModal() { document.getElementById('pageGridModal').classList.add('hidden'); }
     function prevPage() { if (albumState.currentPageIndex > 0) { albumState.currentPageIndex--; selectedItemId = null; renderAll(); } }
@@ -1071,9 +1085,7 @@
 
       try {
         localStorage.setItem(STORAGE_KEY, jsonStr);
-      } catch (e) {
-        // Ignora caso ultrapasse 5MB do localStorage, pois o OPFS já salvou com segurança
-      }
+      } catch (e) {}
 
       const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       if (statusEl) statusEl.textContent = `Salvo às ${hora}`;
@@ -1088,13 +1100,13 @@
         btn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
         btn.classList.add('bg-emerald-600');
         btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> <span>Salvo!</span>`;
-        lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
 
         setTimeout(() => {
           btn.classList.remove('bg-emerald-600');
           btn.classList.add('bg-amber-600', 'hover:bg-amber-700');
           btn.innerHTML = originalHTML;
-          lucide.createIcons();
+          if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         }, 1500);
       }
     }
@@ -1109,9 +1121,7 @@
           albumState = JSON.parse(text);
           return;
         }
-      } catch (e) {
-        // Se ainda não houver arquivo no OPFS, tenta recuperar do localStorage
-      }
+      } catch (e) {}
 
       const data = localStorage.getItem(STORAGE_KEY);
       if (data) {
@@ -1220,7 +1230,7 @@
             container.appendChild(itemDiv);
           });
         }
-        lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
       } catch (err) {
         console.error('Erro ao listar OPFS:', err);
         container.innerHTML = `<div class="text-center py-8 text-red-400 text-xs">Erro ao acessar arquivos internos.</div>`;
@@ -1293,7 +1303,7 @@
       const modal = document.getElementById('downloadReadyModal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
-      lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
 
     function executarAberturaNoNavegadorMobile() {
@@ -1399,7 +1409,7 @@
     function showConfirmModal(title, msg, onConfirm) {
       document.getElementById('modalTitle').textContent = title; document.getElementById('modalMessage').textContent = msg;
       document.getElementById('modalActions').innerHTML = `<button onclick="closeModal()" class="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 text-xs font-semibold">Cancelar</button><button id="modalConfirmBtn" class="px-4 py-2 rounded-xl bg-red-600 text-white text-xs font-semibold">Confirmar</button>`;
-      document.getElementById('modalConfirmBtn'].onclick = () => { onConfirm(); closeModal(); };
+      document.getElementById('modalConfirmBtn').onclick = () => { onConfirm(); closeModal(); };
       document.getElementById('customModal').classList.remove('hidden');
     }
     function closeModal() { document.getElementById('customModal').classList.add('hidden'); }
