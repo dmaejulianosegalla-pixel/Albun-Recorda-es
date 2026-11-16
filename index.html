@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Álbum de Recordações - Scrapbook Digital</title>
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts para estilos manuscritos e clássicos -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Dancing+Script:wght@600;700&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,500;1,500&family=Patrick+Hand&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- html2canvas & jsPDF para exportação em PDF e Compartilhamento -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+      overflow: hidden;
+      background-color: #e7e5e4; /* stone-200 */
+    }
+
+    /* Texturas de Papel */
+    .paper-cream {
+      background-color: #fdfbf7;
+      background-image: radial-gradient(#e6dfd3 0.6px, transparent 0.6px);
+      background-size: 16px 16px;
+    }
+    .paper-kraft {
+      background-color: #d6b892;
+      background-image: 
+        radial-gradient(rgba(120, 80, 40, 0.12) 1px, transparent 0),
+        radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 0);
+      background-size: 20px 20px;
+      background-position: 0 0, 10px 10px;
+    }
+    .paper-dots {
+      background-color: #ffffff;
+      background-image: radial-gradient(#cbd5e1 1.3px, transparent 1.3px);
+      background-size: 22px 22px;
+    }
+    .paper-lined {
+      background-color: #fffef9;
+      background-image: 
+        linear-gradient(90deg, transparent 58px, #fca5a5 58px, #fca5a5 60px, transparent 60px),
+        linear-gradient(#e2e8f0 1px, transparent 1px);
+      background-size: 100% 32px;
+    }
+    .paper-blush {
+      background-color: #fdf2f4;
+      background-image: radial-gradient(#f5d0d6 0.8px, transparent 0.8px);
+      background-size: 18px 18px;
+    }
+    .paper-sage {
+      background-color: #f2f6f3;
+      background-image: radial-gradient(#cfddd3 0.8px, transparent 0.8px);
+      background-size: 18px 18px;
+    }
+    .paper-cover {
+      background-color: #3f2e26;
+      background-image: 
+        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 0),
+        linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.2) 100%);
+      background-size: 14px 14px, 100% 100%;
+    }
+
+    /* Sombra realista da folha */
+    .sheet-shadow {
+      box-shadow: 
+        0 1px 3px rgba(0,0,0,0.08),
+        0 12px 32px -4px rgba(28, 25, 23, 0.18),
+        inset 0 0 40px rgba(0,0,0,0.02);
+    }
+
+    /* Estilos de Molduras de Fotos e Decorações */
+    .frame-classic {
+      background: #ffffff;
+      padding: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .frame-polaroid {
+      background: #ffffff;
+      padding: 12px 12px 42px 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+    }
+    .frame-rounded {
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+    }
+    .frame-taped, .frame-taped-pink, .frame-taped-blue {
+      background: #ffffff;
+      padding: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.14);
+      position: relative;
+    }
+    .frame-taped::before, .frame-taped::after,
+    .frame-taped-pink::before, .frame-taped-pink::after,
+    .frame-taped-blue::before, .frame-taped-blue::after {
+      content: '';
+      position: absolute;
+      width: 56px;
+      height: 18px;
+      backdrop-filter: blur(1px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      z-index: 5;
+    }
+    .frame-taped::before, .frame-taped::after {
+      background: rgba(253, 224, 71, 0.72);
+    }
+    .frame-taped-pink::before, .frame-taped-pink::after {
+      background: rgba(244, 114, 182, 0.65);
+    }
+    .frame-taped-blue::before, .frame-taped-blue::after {
+      background: rgba(96, 165, 250, 0.65);
+    }
+    .frame-taped::before, .frame-taped-pink::before, .frame-taped-blue::before {
+      top: -8px;
+      left: -14px;
+      transform: rotate(-32deg);
+    }
+    .frame-taped::after, .frame-taped-pink::after, .frame-taped-blue::after {
+      bottom: -8px;
+      right: -14px;
+      transform: rotate(-32deg);
+    }
+
+    /* Clipe Metálico Decorativo */
+    .frame-clipped {
+      background: #ffffff;
+      padding: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      position: relative;
+    }
+    .frame-clipped::before {
+      content: '';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 32px;
+      border: 3px solid #78716c;
+      border-radius: 8px;
+      z-index: 10;
+      box-shadow: 1px 2px 3px rgba(0,0,0,0.2);
+    }
+
+    /* Filtros de Imagem */
+    .filter-none { filter: none; }
+    .filter-vintage { filter: sepia(0.28) contrast(1.06) brightness(1.03) saturate(0.85); }
+    .filter-bw { filter: grayscale(1) contrast(1.15); }
+    .filter-sepia { filter: sepia(0.75) contrast(1.05); }
+    .filter-vivid { filter: saturate(1.35) contrast(1.08); }
+    .filter-soft { filter: brightness(1.06) contrast(0.92) saturate(0.9); }
+
+    /* Controles de Seleção */
+    .album-item {
+      position: absolute;
+    }
+    .album-item.selected {
+      outline: 2px dashed #d97706;
+      outline-offset: 4px;
+    }
+    .handle-move {
+      position: absolute;
+      top: -34px;
+      left: 0;
+      background: #d97706;
+      color: #ffffff;
+      padding: 3px 9px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 35;
+      white-space: nowrap;
+    }
+    .handle-move:active {
+      cursor: grabbing;
+    }
+    .handle-resize {
+      position: absolute;
+      right: -11px;
+      bottom: -11px;
+      width: 22px;
+      height: 22px;
+      background: #d97706;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      cursor: nwse-resize;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+      z-index: 30;
+    }
+    .handle-rotate {
+      position: absolute;
+      top: -34px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 24px;
+      background: #ffffff;
+      color: #d97706;
+      border: 2px solid #d97706;
+      border-radius: 50%;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 30;
+    }
+
+    /* Guias de Alinhamento Magnéticas */
+    .snap-guide-v {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      border-left: 1.5px dashed #d97706;
+      pointer-events: none;
+      z-index: 40;
+    }
+    .snap-guide-h {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      border-top: 1.5px dashed #d97706;
+      pointer-events: none;
+      z-index: 40;
+    }
+
+    /* Ocultar alças durante exportação PDF/Compartilhamento */
+    .exporting-mode .album-item.selected {
+      outline: none !important;
+    }
+    .exporting-mode .handle-resize,
+    .exporting-mode .handle-rotate,
+    .exporting-mode .handle-move,
+    .exporting-mode .snap-guide-v,
+    .exporting-mode .snap-guide-h,
+    .exporting-mode .no-export {
+      display: none !important;
+    }
+
+    /* Scrollbar discreta */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col text-stone-800">
+
+  <!-- Barra Superior (Header) -->
+  <header class="h-14 bg-white border-b border-stone-200 px-2 sm:px-5 flex items-center justify-between shrink-0 z-30 shadow-xs">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-sm shrink-0">
+        <i data-lucide="book-heart" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      </div>
+      <div>
+        <input id="albumTitleInput" type="text" value="Meu Álbum de Recordações"
+          class="font-bold text-stone-800 text-xs sm:text-base bg-transparent border-b border-transparent hover:border-stone-300 focus:border-amber-600 focus:outline-none px-1 rounded transition w-32 sm:w-56 truncate"
+          title="Clique para editar o título do álbum" />
+        <p id="saveStatus" class="text-[10px] sm:text-[11px] text-stone-400 px-1">Salvo automaticamente</p>
+      </div>
+    </div>
+
+    <!-- Ações Principais -->
+    <div class="flex items-center gap-1 sm:gap-1.5">
+      <!-- Desfazer / Refazer -->
+      <div class="flex items-center bg-stone-100 rounded-xl p-0.5 border border-stone-200 mr-1">
+        <button onclick="undo()" id="undoBtn" disabled title="Desfazer (Ctrl+Z)"
+          class="p-1.5 rounded-lg text-stone-600 hover:bg-white disabled:opacity-30 transition">
+          <i data-lucide="undo-2" class="w-4 h-4"></i>
+        </button>
+        <button onclick="redo()" id="redoBtn" disabled title="Refazer (Ctrl+Y)"
+          class="p-1.5 rounded-lg text-stone-600 hover:bg-white disabled:opacity-30 transition">
+          <i data-lucide="redo-2" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Compartilhar Página (Android Native Share) -->
+      <button onclick="shareCurrentPage()" title="Compartilhar Página Atual como Imagem"
+        class="p-2 sm:px-3 sm:py-1.5 rounded-xl text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 flex items-center gap-1.5 transition">
+        <i data-lucide="share-2" class="w-4 h-4"></i>
+        <span class="hidden md:inline">Compartilhar</span>
+      </button>
+
+      <button onclick="exportProjectJSON()" title="Salvar arquivo de backup (.json)"
+        class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-medium text-stone-600 hover:bg-stone-100 border border-stone-200 flex items-center gap-1 transition">
+        <i data-lucide="download" class="w-4 h-4"></i>
+        <span class="hidden lg:inline">Backup</span>
+      </button>
+
+      <label title="Carregar arquivo de backup (.json)"
+        class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-medium text-stone-600 hover:bg-stone-100 border border-stone-200 flex items-center gap-1 cursor-pointer transition">
+        <i data-lucide="upload" class="w-4 h-4"></i>
+        <span class="hidden lg:inline">Abrir</span>
+        <input type="file" accept=".json" onchange="importProjectJSON(event)" class="hidden" />
+      </label>
+
+      <button onclick="openResetModal()" title="Novo Álbum"
+        class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-medium text-stone-600 hover:bg-red-50 hover:text-red-600 border border-stone-200 flex items-center gap-1 transition">
+        <i data-lucide="file-plus" class="w-4 h-4"></i>
+      </button>
+
+      <button onclick="exportToPDF()" id="exportPdfBtn"
+        class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-amber-600 hover:bg-amber-700 active:scale-95 text-white shadow-sm flex items-center gap-1.5 transition">
+        <i data-lucide="file-down" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">Exportar PDF</span>
+        <span class="sm:hidden">PDF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Área Principal de Trabalho -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- Barra Lateral Esquerda: Ferramentas de Criação -->
+    <aside class="w-16 sm:w-20 bg-white border-r border-stone-200 flex flex-col items-center py-3 gap-2 shrink-0 z-20 overflow-y-auto">
+      
+      <!-- Adicionar Foto -->
+      <label class="w-14 sm:w-16 py-2 rounded-xl hover:bg-amber-50 text-stone-700 hover:text-amber-700 flex flex-col items-center gap-1 cursor-pointer transition group">
+        <div class="w-9 h-9 rounded-lg bg-amber-100/70 group-hover:bg-amber-200/70 text-amber-700 flex items-center justify-center transition">
+          <i data-lucide="image-plus" class="w-5 h-5"></i>
+        </div>
+        <span class="text-[11px] font-medium">Fotos</span>
+        <input type="file" accept="image/*" multiple onchange="handlePhotoUpload(event)" class="hidden" />
+      </label>
+
+      <!-- Adicionar Texto -->
+      <button onclick="addTextItem()" class="w-14 sm:w-16 py-2 rounded-xl hover:bg-amber-50 text-stone-700 hover:text-amber-700 flex flex-col items-center gap-1 transition group">
+        <div class="w-9 h-9 rounded-lg bg-stone-100 group-hover:bg-amber-100 text-stone-700 group-hover:text-amber-700 flex items-center justify-center transition">
+          <i data-lucide="type" class="w-5 h-5"></i>
+        </div>
+        <span class="text-[11px] font-medium">Texto</span>
+      </button>
+
+      <!-- Post-it -->
+      <button onclick="addStickyNote()" class="w-14 sm:w-16 py-2 rounded-xl hover:bg-amber-50 text-stone-700 hover:text-amber-700 flex flex-col items-center gap-1 transition group">
+        <div class="w-9 h-9 rounded-lg bg-yellow-100 text-yellow-700 flex items-center justify-center transition">
+          <i data-lucide="sticky-note" class="w-5 h-5"></i>
+        </div>
+        <span class="text-[11px] font-medium">Nota</span>
+      </button>
+
+      <!-- Caneta / Desenho Livre -->
+      <button id="drawModeBtn" onclick="toggleDrawMode()" class="w-14 sm:w-16 py-2 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-1 transition group">
+        <div id="drawIconWrap" class="w-9 h-9 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center transition">
+          <i data-lucide="pen-tool" class="w-5 h-5"></i>
+        </div>
+        <span class="text-[11px] font-medium">Desenhar</span>
+      </button>
+
+      <!-- Adesivos & Carimbos -->
+      <button onclick="toggleDrawer('stickers')" id="btnDrawerStickers" class="w-14 sm:w-16 py-2 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-1 transition group">
+        <div class="w-9 h-9 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center transition">
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+        </div>
+        <span class="text-[11px] font-medium">Adesivos</span>
+      </button>
+
+      <!-- Papel de Fundo -->
+      <button onclick="toggleDrawer('paper')" id="btnDrawerPaper" class="w-14 sm:w-16 py-2 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-1 transition group">
+        <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center transition">
+          <i data-lucide="scroll-text" class="w-5 h-5"></i>
+        </div>
+        <span class="text-[11px] font-medium">Papel</span>
+      </button>
+    </aside>
+
+    <!-- Painel Flutuante Secundário -->
+    <div id="sideDrawer" class="hidden w-64 bg-white border-r border-stone-200 p-4 flex-col gap-4 z-20 shadow-lg overflow-y-auto shrink-0">
+      <div class="flex items-center justify-between border-b border-stone-100 pb-2">
+        <h3 id="drawerTitle" class="font-semibold text-sm text-stone-800">Opções</h3>
+        <button onclick="closeDrawer()" class="p-1 rounded-lg hover:bg-stone-100 text-stone-500">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div id="drawerContent" class="flex flex-col gap-4"></div>
+    </div>
+
+    <!-- Área Central do Canvas (Folha de Papel) -->
+    <main class="flex-1 flex flex-col overflow-hidden bg-stone-200/80 relative">
+      
+      <!-- Barra Contextual Superior -->
+      <div id="contextToolbar" class="h-12 bg-white/95 backdrop-blur border-b border-stone-200 px-4 flex items-center gap-3 overflow-x-auto shrink-0 z-10">
+        <span class="text-xs text-stone-500 flex items-center gap-1.5">
+          <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-amber-600"></i>
+          Clique em um elemento para selecioná-lo, movê-lo pela alça superior ou redimensioná-lo.
+        </span>
+      </div>
+
+      <!-- Viewport Centralizado com Zoom Adaptativo -->
+      <div id="canvasViewport" class="flex-1 overflow-auto flex items-center justify-center p-4 sm:p-8" onmousedown="handleViewportClick(event)">
+        
+        <!-- A Folha de Papel -->
+        <div id="paperWrapper" class="relative transition-transform duration-150 origin-center">
+          <div id="paperSheet" class="w-[842px] h-[595px] relative overflow-hidden rounded-sm sheet-shadow paper-cream transition-colors duration-300">
+            
+            <!-- Guias de Alinhamento Magnéticas (Ocultas por padrão) -->
+            <div id="snapGuideV" class="snap-guide-v hidden"></div>
+            <div id="snapGuideH" class="snap-guide-h hidden"></div>
+
+            <!-- Camada de Elementos -->
+            <div id="elementsLayer" class="absolute inset-0 z-10"></div>
+
+            <!-- Camada de Desenho Livre -->
+            <canvas id="drawingCanvas" width="842" height="595" class="absolute inset-0 z-20 pointer-events-none"></canvas>
+
+            <!-- Número da Página -->
+            <div id="pageNumberBadge" class="absolute bottom-3 right-4 text-xs font-medium opacity-40 pointer-events-none z-30 font-serif">
+              1
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Barra Inferior de Navegação de Páginas e Zoom -->
+      <footer class="h-14 bg-white border-t border-stone-200 px-2 sm:px-6 flex items-center justify-between shrink-0 z-20">
+        
+        <!-- Controles de Página -->
+        <div class="flex items-center gap-1 sm:gap-2">
+          <button onclick="openPageGridModal()" title="Visão Geral das Páginas"
+            class="p-2 rounded-xl bg-stone-100 hover:bg-amber-100 text-stone-700 hover:text-amber-800 transition flex items-center gap-1 text-xs font-medium">
+            <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            <span class="hidden md:inline">Páginas</span>
+          </button>
+
+          <button onclick="prevPage()" id="prevPageBtn" class="p-1.5 rounded-xl hover:bg-stone-100 disabled:opacity-30 text-stone-700 transition" title="Página Anterior">
+            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+          </button>
+
+          <div id="pageTabs" class="flex items-center gap-1 max-w-[130px] sm:max-w-md overflow-x-auto py-1 px-1">
+            <!-- Abas geradas via JS -->
+          </div>
+
+          <button onclick="nextPage()" id="nextPageBtn" class="p-1.5 rounded-xl hover:bg-stone-100 disabled:opacity-30 text-stone-700 transition" title="Próxima Página">
+            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+          </button>
+
+          <div class="h-5 w-[1px] bg-stone-200 mx-0.5"></div>
+
+          <button onclick="addNewPage(false)" class="px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-amber-100 text-stone-700 hover:text-amber-800 text-xs font-medium flex items-center gap-1 transition" title="Adicionar Nova Página">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Nova</span>
+          </button>
+
+          <button onclick="deleteCurrentPage()" id="deletePageBtn" class="p-1.5 rounded-xl hover:bg-red-50 text-stone-400 hover:text-red-600 transition" title="Excluir Página Atual">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Controles de Zoom -->
+        <div class="flex items-center gap-1 bg-stone-100 p-1 rounded-xl">
+          <button onclick="adjustZoom(-0.1)" class="p-1.5 rounded-lg hover:bg-white text-stone-600 transition" title="Diminuir Zoom">
+            <i data-lucide="zoom-out" class="w-4 h-4"></i>
+          </button>
+          <span id="zoomLabel" class="text-xs font-semibold text-stone-600 w-10 text-center">100%</span>
+          <button onclick="adjustZoom(0.1)" class="p-1.5 rounded-lg hover:bg-white text-stone-600 transition" title="Aumentar Zoom">
+            <i data-lucide="zoom-in" class="w-4 h-4"></i>
+          </button>
+          <button onclick="fitSheetToScreen()" class="px-2 py-1 rounded-lg hover:bg-white text-[11px] font-medium text-stone-600 transition" title="Ajustar à tela">
+            Ajustar
+          </button>
+        </div>
+
+      </footer>
+    </main>
+  </div>
+
+  <!-- Modal Visão Geral em Grade das Páginas -->
+  <div id="pageGridModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-stone-100 overflow-hidden">
+      <div class="p-4 border-b border-stone-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="layout-grid" class="w-5 h-5 text-amber-600"></i>
+          <h3 class="font-bold text-stone-800 text-base">Visão Geral do Álbum</h3>
+        </div>
+        <button onclick="closePageGridModal()" class="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="pageGridContainer" class="p-5 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-4 bg-stone-50">
+        <!-- Miniaturas geradas via JS -->
+      </div>
+      <div class="p-3 border-t border-stone-100 bg-white flex justify-between items-center">
+        <button onclick="addNewPage(false); closePageGridModal();" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 transition">
+          <i data-lucide="plus" class="w-4 h-4"></i> Adicionar Página
+        </button>
+        <button onclick="closePageGridModal()" class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold transition">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Notificação / Confirmação -->
+  <div id="customModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-stone-100">
+      <div class="flex items-center gap-3 mb-3">
+        <div id="modalIconWrap" class="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+          <i data-lucide="info" class="w-5 h-5"></i>
+        </div>
+        <h3 id="modalTitle" class="font-bold text-stone-800 text-base">Aviso</h3>
+      </div>
+      <p id="modalMessage" class="text-sm text-stone-600 mb-6 leading-relaxed"></p>
+      <div id="modalActions" class="flex justify-end gap-2"></div>
+    </div>
+  </div>
+
+  <!-- Overlay de Carregamento -->
+  <div id="pdfOverlay" class="hidden fixed inset-0 bg-stone-900/75 backdrop-blur-xs z-50 flex flex-col items-center justify-center text-white p-4">
+    <div class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <h3 id="overlayTitle" class="font-bold text-lg">Gerando seu Álbum em PDF...</h3>
+    <p id="pdfProgressText" class="text-sm text-stone-300 mt-1">Preparando páginas em alta resolução</p>
+  </div>
+
+  <script>
+    // =========================================================================
+    // ESTADO DA APLICAÇÃO E HISTÓRICO (UNDO / REDO)
+    // =========================================================================
+    const SHEET_WIDTH = 842;
+    const SHEET_HEIGHT = 595;
+    const STORAGE_KEY = 'album_recordacoes_v1';
+
+    let albumState = {
+      title: 'Meu Álbum de Recordações',
+      currentPageIndex: 0,
+      pages: []
+    };
+
+    let undoStack = [];
+    let redoStack = [];
+    const MAX_HISTORY = 25;
+
+    let selectedItemId = null;
+    let currentZoom = 1;
+    let isDrawMode = false;
+    let brushColor = '#1c1917';
+    let brushSize = 4;
+    let isEraser = false;
+
+    function pushHistory() {
+      undoStack.push(JSON.stringify(albumState));
+      if (undoStack.length > MAX_HISTORY) undoStack.shift();
+      redoStack = [];
+      updateHistoryButtons();
+    }
+
+    function undo() {
+      if (undoStack.length === 0) return;
+      redoStack.push(JSON.stringify(albumState));
+      const prevState = undoStack.pop();
+      albumState = JSON.parse(prevState);
+      selectedItemId = null;
+      renderAll();
+      saveToLocalStorage(false);
+      updateHistoryButtons();
+    }
+
+    function redo() {
+      if (redoStack.length === 0) return;
+      undoStack.push(JSON.stringify(albumState));
+      const nextState = redoStack.pop();
+      albumState = JSON.parse(nextState);
+      selectedItemId = null;
+      renderAll();
+      saveToLocalStorage(false);
+      updateHistoryButtons();
+    }
+
+    function updateHistoryButtons() {
+      const undoBtn = document.getElementById('undoBtn');
+      const redoBtn = document.getElementById('redoBtn');
+      if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+      if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+    }
+
+    // =========================================================================
+    // INICIALIZAÇÃO
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      loadFromLocalStorage();
+      if (albumState.pages.length === 0) {
+        initDefaultAlbum();
+      }
+      renderAll();
+      fitSheetToScreen();
+      setupDrawingCanvas();
+      lucide.createIcons();
+      updateHistoryButtons();
+
+      const titleInput = document.getElementById('albumTitleInput');
+      titleInput.value = albumState.title;
+      titleInput.addEventListener('input', (e) => {
+        albumState.title = e.target.value || 'Meu Álbum de Recordações';
+        saveToLocalStorage(false);
+      });
+
+      window.addEventListener('resize', fitSheetToScreen);
+      
+      // Atalhos de teclado (Delete, Ctrl+Z, Ctrl+Y)
+      window.addEventListener('keydown', (e) => {
+        const activeTag = document.activeElement.tagName.toLowerCase();
+        const isEditable = document.activeElement.isContentEditable;
+        if (activeTag === 'input' || activeTag === 'textarea' || isEditable) return;
+
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+          e.preventDefault();
+          if (e.shiftKey) redo();
+          else undo();
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+          e.preventDefault();
+          redo();
+        } else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedItemId) {
+          deleteSelectedItem();
+        }
+      });
+    });
+
+    function initDefaultAlbum() {
+      const today = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+      albumState = {
+        title: 'Meu Álbum de Recordações',
+        currentPageIndex: 0,
+        pages: [
+          {
+            id: generateId(),
+            paper: 'paper-cover',
+            isCover: true,
+            drawingData: null,
+            items: [
+              {
+                id: generateId(),
+                type: 'text',
+                x: 171,
+                y: 190,
+                width: 500,
+                rotation: 0,
+                content: 'Nossas Melhores Memórias',
+                fontFamily: "'Dancing Script', cursive",
+                fontSize: 54,
+                color: '#fef3c7',
+                bgColor: 'transparent',
+                align: 'center'
+              },
+              {
+                id: generateId(),
+                type: 'text',
+                x: 246,
+                y: 285,
+                width: 350,
+                rotation: 0,
+                content: `Edição Especial • ${today}`,
+                fontFamily: "'Lora', serif",
+                fontSize: 18,
+                color: '#d6d3d1',
+                bgColor: 'transparent',
+                align: 'center'
+              },
+              {
+                id: generateId(),
+                type: 'sticker',
+                x: 390,
+                y: 350,
+                width: 64,
+                rotation: 0,
+                emoji: '✨'
+              }
+            ]
+          },
+          {
+            id: generateId(),
+            paper: 'paper-cream',
+            isCover: false,
+            drawingData: null,
+            items: [
+              {
+                id: generateId(),
+                type: 'text',
+                x: 60,
+                y: 45,
+                width: 420,
+                rotation: -1,
+                content: 'Capítulo 1: Um dia inesquecível...',
+                fontFamily: "'Caveat', cursive",
+                fontSize: 34,
+                color: '#44403c',
+                bgColor: 'transparent',
+                align: 'left'
+              },
+              {
+                id: generateId(),
+                type: 'sticky',
+                x: 540,
+                y: 70,
+                width: 220,
+                rotation: 3,
+                content: 'Dica: Clique em "Fotos" na barra lateral para colar suas imagens aqui!',
+                fontFamily: "'Patrick Hand', cursive",
+                fontSize: 20,
+                color: '#422006',
+                bgColor: '#fef08a',
+                align: 'left'
+              }
+            ]
+          }
+        ]
+      };
+    }
+
+    function generateId() {
+      return 'id_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function getCurrentPage() {
+      return albumState.pages[albumState.currentPageIndex];
+    }
+
+    // =========================================================================
+    // RENDERIZAÇÃO DA PÁGINA E ELEMENTOS
+    // =========================================================================
+    function renderAll() {
+      const page = getCurrentPage();
+      if (!page) return;
+
+      const sheet = document.getElementById('paperSheet');
+      sheet.className = `w-[842px] h-[595px] relative overflow-hidden rounded-sm sheet-shadow transition-colors duration-300 ${page.paper}`;
+
+      const badge = document.getElementById('pageNumberBadge');
+      badge.style.color = page.paper === 'paper-cover' ? '#ffffff' : '#44403c';
+      badge.textContent = page.isCover ? 'Capa' : `Página ${albumState.currentPageIndex}`;
+
+      const layer = document.getElementById('elementsLayer');
+      layer.innerHTML = '';
+
+      page.items.forEach((item) => {
+        const el = createDOMElementForItem(item);
+        layer.appendChild(el);
+      });
+
+      loadDrawingToCanvas(page.drawingData);
+      renderPageTabs();
+      updateContextToolbar();
+      lucide.createIcons();
+    }
+
+    function createDOMElementForItem(item) {
+      const wrapper = document.createElement('div');
+      wrapper.id = item.id;
+      wrapper.className = `album-item ${selectedItemId === item.id ? 'selected' : ''}`;
+      wrapper.style.left = `${item.x}px`;
+      wrapper.style.top = `${item.y}px`;
+      wrapper.style.width = `${item.width}px`;
+      wrapper.style.transform = `rotate(${item.rotation || 0}deg)`;
+
+      // Seleciona ao clicar no item
+      wrapper.addEventListener('mousedown', (e) => {
+        if (isDrawMode) return;
+        if (e.target.closest('.handle-resize') || e.target.closest('.handle-rotate') || e.target.closest('.handle-move')) return;
+        selectItem(item.id);
+      });
+
+      wrapper.addEventListener('touchstart', (e) => {
+        if (isDrawMode) return;
+        if (e.target.closest('.handle-resize') || e.target.closest('.handle-rotate') || e.target.closest('.handle-move')) return;
+        selectItem(item.id);
+      }, { passive: true });
+
+      if (item.type === 'photo') {
+        const frameDiv = document.createElement('div');
+        frameDiv.className = `w-full transition-all ${item.frame || 'frame-polaroid'}`;
+
+        const img = document.createElement('img');
+        img.src = item.src;
+        img.className = `w-full h-auto block pointer-events-none select-none transition-all ${item.filter || 'filter-none'}`;
+        img.draggable = false;
+        frameDiv.appendChild(img);
+
+        if (item.frame === 'frame-polaroid') {
+          const caption = document.createElement('div');
+          caption.contentEditable = true;
+          caption.innerText = item.caption || 'Clique para legendar...';
+          caption.style.fontFamily = "'Caveat', cursive";
+          caption.className = 'mt-2 text-center text-stone-700 text-xl outline-none focus:bg-amber-50/60 rounded px-1 cursor-text';
+          caption.addEventListener('focus', () => pushHistory());
+          caption.addEventListener('input', (e) => {
+            item.caption = e.target.innerText;
+            saveToLocalStorage(false);
+          });
+          caption.addEventListener('mousedown', (e) => e.stopPropagation());
+          frameDiv.appendChild(caption);
+        }
+
+        wrapper.appendChild(frameDiv);
+      } 
+      else if (item.type === 'text' || item.type === 'sticky') {
+        const textBox = document.createElement('div');
+        textBox.contentEditable = true;
+        textBox.innerText = item.content;
+        textBox.style.fontFamily = item.fontFamily || "'Caveat', cursive";
+        textBox.style.fontSize = `${item.fontSize || 28}px`;
+        textBox.style.color = item.color || '#292524';
+        textBox.style.textAlign = item.align || 'left';
+        textBox.style.lineHeight = '1.3';
+        
+        if (item.type === 'sticky') {
+          textBox.style.backgroundColor = item.bgColor || '#fef08a';
+          textBox.className = 'p-4 rounded-sm shadow-md outline-none cursor-text min-h-[110px]';
+        } else if (item.type === 'stamp') {
+          textBox.className = 'px-3 py-1.5 border-2 rounded-md font-bold tracking-widest uppercase outline-none cursor-text text-center';
+        } else {
+          textBox.style.backgroundColor = item.bgColor || 'transparent';
+          textBox.className = 'p-2 rounded outline-none cursor-text min-h-[36px]';
+        }
+
+        textBox.addEventListener('focus', () => pushHistory());
+        textBox.addEventListener('input', (e) => {
+          item.content = e.target.innerText;
+          saveToLocalStorage(false);
+        });
+
+        wrapper.appendChild(textBox);
+      }
+      else if (item.type === 'stamp') {
+        const stampBox = document.createElement('div');
+        stampBox.contentEditable = true;
+        stampBox.innerText = item.content;
+        stampBox.style.color = item.color || '#b91c1c';
+        stampBox.style.borderColor = item.color || '#b91c1c';
+        stampBox.style.fontFamily = "'Lora', serif";
+        stampBox.style.fontSize = `${item.fontSize || 16}px`;
+        stampBox.className = 'px-3 py-1 border-2 border-dashed rounded font-bold tracking-widest uppercase outline-none cursor-text text-center opacity-85';
+        stampBox.addEventListener('focus', () => pushHistory());
+        stampBox.addEventListener('input', (e) => {
+          item.content = e.target.innerText;
+          saveToLocalStorage(false);
+        });
+        wrapper.appendChild(stampBox);
+      }
+      else if (item.type === 'sticker') {
+        const stickerDiv = document.createElement('div');
+        stickerDiv.className = 'w-full aspect-square flex items-center justify-center select-none pointer-events-none drop-shadow-sm';
+        stickerDiv.style.fontSize = `${item.width * 0.82}px`;
+        stickerDiv.textContent = item.emoji;
+        wrapper.appendChild(stickerDiv);
+      }
+
+      // Alças de Controle quando selecionado
+      if (selectedItemId === item.id && !isDrawMode) {
+        // Alça de Movimentação Superior (Arraste Suave)
+        const moveHandle = document.createElement('div');
+        moveHandle.className = 'handle-move';
+        moveHandle.title = 'Arraste para mover o item';
+        moveHandle.innerHTML = `<i data-lucide="move" class="w-3.5 h-3.5"></i> Mover`;
+        moveHandle.addEventListener('mousedown', (e) => startDrag(e, item, wrapper));
+        moveHandle.addEventListener('touchstart', (e) => startDrag(e.touches[0], item, wrapper, true), { passive: false });
+        wrapper.appendChild(moveHandle);
+
+        // Alça de Rotação
+        const rotateHandle = document.createElement('div');
+        rotateHandle.className = 'handle-rotate';
+        rotateHandle.title = 'Arraste para girar';
+        rotateHandle.innerHTML = `<i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>`;
+        rotateHandle.addEventListener('mousedown', (e) => startRotate(e, item, wrapper));
+        rotateHandle.addEventListener('touchstart', (e) => startRotate(e.touches[0], item, wrapper, true), { passive: false });
+        wrapper.appendChild(rotateHandle);
+
+        // Alça de Redimensionamento
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = 'handle-resize';
+        resizeHandle.title = 'Arraste para redimensionar';
+        resizeHandle.addEventListener('mousedown', (e) => startResize(e, item, wrapper));
+        resizeHandle.addEventListener('touchstart', (e) => startResize(e.touches[0], item, wrapper, true), { passive: false });
+        wrapper.appendChild(resizeHandle);
+      }
+
+      return wrapper;
+    }
+
+    function selectItem(id) {
+      if (selectedItemId === id) return;
+      selectedItemId = id;
+      renderAll();
+    }
+
+    function handleViewportClick(e) {
+      if (e.target.id === 'canvasViewport' || e.target.id === 'paperSheet' || e.target.id === 'elementsLayer') {
+        if (selectedItemId) {
+          selectedItemId = null;
+          renderAll();
+        }
+      }
+    }
+
+    // =========================================================================
+    // MANIPULAÇÃO COM GUIAS MAGNÉTICAS DE ALINHAMENTO
+    // =========================================================================
+    function startDrag(startEvent, item, wrapper, isTouch = false) {
+      if (startEvent.stopPropagation) startEvent.stopPropagation();
+      if (!isTouch && startEvent.preventDefault) startEvent.preventDefault();
+      
+      pushHistory();
+      const startX = startEvent.clientX;
+      const startY = startEvent.clientY;
+      const origX = item.x;
+      const origY = item.y;
+
+      const guideV = document.getElementById('snapGuideV');
+      const guideH = document.getElementById('snapGuideH');
+      const elHeight = wrapper.offsetHeight || 100;
+
+      function onMove(ev) {
+        const pt = isTouch ? ev.touches[0] : ev;
+        const dx = (pt.clientX - startX) / currentZoom;
+        const dy = (pt.clientY - startY) / currentZoom;
+        
+        let nextX = Math.round(origX + dx);
+        let nextY = Math.round(origY + dy);
+
+        // Verifica alinhamento magnético ao centro da folha (842x595)
+        const itemCenterX = nextX + item.width / 2;
+        const itemCenterY = nextY + elHeight / 2;
+        const sheetCenterX = SHEET_WIDTH / 2;
+        const sheetCenterY = SHEET_HEIGHT / 2;
+
+        if (Math.abs(itemCenterX - sheetCenterX) < 10) {
+          nextX = Math.round(sheetCenterX - item.width / 2);
+          guideV.classList.remove('hidden');
+        } else {
+          guideV.classList.add('hidden');
+        }
+
+        if (Math.abs(itemCenterY - sheetCenterY) < 10) {
+          nextY = Math.round(sheetCenterY - elHeight / 2);
+          guideH.classList.remove('hidden');
+        } else {
+          guideH.classList.add('hidden');
+        }
+
+        item.x = nextX;
+        item.y = nextY;
+        wrapper.style.left = `${item.x}px`;
+        wrapper.style.top = `${item.y}px`;
+      }
+
+      function onEnd() {
+        window.removeEventListener(isTouch ? 'touchmove' : 'mousemove', onMove);
+        window.removeEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
+        guideV.classList.add('hidden');
+        guideH.classList.add('hidden');
+        saveToLocalStorage(false);
+      }
+
+      window.addEventListener(isTouch ? 'touchmove' : 'mousemove', onMove, { passive: false });
+      window.addEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
+    }
+
+    function startResize(startEvent, item, wrapper, isTouch = false) {
+      if (startEvent.stopPropagation) startEvent.stopPropagation();
+      if (!isTouch && startEvent.preventDefault) startEvent.preventDefault();
+
+      pushHistory();
+      const startX = startEvent.clientX;
+      const origWidth = item.width;
+
+      function onMove(ev) {
+        const pt = isTouch ? ev.touches[0] : ev;
+        const dx = (pt.clientX - startX) / currentZoom;
+        const newWidth = Math.max(45, Math.min(780, Math.round(origWidth + dx)));
+        item.width = newWidth;
+        wrapper.style.width = `${newWidth}px`;
+        if (item.type === 'sticker') {
+          wrapper.firstChild.style.fontSize = `${newWidth * 0.82}px`;
+        }
+      }
+
+      function onEnd() {
+        window.removeEventListener(isTouch ? 'touchmove' : 'mousemove', onMove);
+        window.removeEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
+        saveToLocalStorage(false);
+      }
+
+      window.addEventListener(isTouch ? 'touchmove' : 'mousemove', onMove, { passive: false });
+      window.addEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
+    }
+
+    function startRotate(startEvent, item, wrapper, isTouch = false) {
+      if (startEvent.stopPropagation) startEvent.stopPropagation();
+      if (!isTouch && startEvent.preventDefault) startEvent.preventDefault();
+
+      pushHistory();
+      const rect = wrapper.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      function onMove(ev) {
+        const pt = isTouch ? ev.touches[0] : ev;
+        const radians = Math.atan2(pt.clientY - centerY, pt.clientX - centerX);
+        let degrees = Math.round(radians * (180 / Math.PI) + 90);
+        if (degrees < 0) degrees += 360;
+        if (degrees > 355 || degrees < 5) degrees = 0;
+        item.rotation = degrees;
+        wrapper.style.transform = `rotate(${degrees}deg)`;
+      }
+
+      function onEnd() {
+        window.removeEventListener(isTouch ? 'touchmove' : 'mousemove', onMove);
+        window.removeEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
+        saveToLocalStorage(false);
+      }
+
+      window.addEventListener(isTouch ? 'touchmove' : 'mousemove', onMove, { passive: false });
+      window.addEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
+    }
+
+    // =========================================================================
+    // DESENHO LIVRE
+    // =========================================================================
+    let isDrawing = false;
+    let drawingCtx = null;
+
+    function setupDrawingCanvas() {
+      const canvas = document.getElementById('drawingCanvas');
+      drawingCtx = canvas.getContext('2d');
+
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseleave', stopDrawing);
+
+      canvas.addEventListener('touchstart', (e) => startDrawing(e.touches[0]), { passive: false });
+      canvas.addEventListener('touchmove', (e) => draw(e.touches[0]), { passive: false });
+      canvas.addEventListener('touchend', stopDrawing);
+    }
+
+    function startDrawing(e) {
+      if (!isDrawMode) return;
+      pushHistory();
+      isDrawing = true;
+      const canvas = document.getElementById('drawingCanvas');
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / currentZoom;
+      const y = (e.clientY - rect.top) / currentZoom;
+
+      drawingCtx.beginPath();
+      drawingCtx.moveTo(x, y);
+      drawingCtx.lineCap = 'round';
+      drawingCtx.lineJoin = 'round';
+      drawingCtx.lineWidth = brushSize;
+      drawingCtx.strokeStyle = isEraser ? 'rgba(0,0,0,1)' : brushColor;
+      if (isEraser) {
+        drawingCtx.globalCompositeOperation = 'destination-out';
+      } else {
+        drawingCtx.globalCompositeOperation = 'source-over';
+      }
+    }
+
+    function draw(e) {
+      if (!isDrawing || !isDrawMode) return;
+      const canvas = document.getElementById('drawingCanvas');
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / currentZoom;
+      const y = (e.clientY - rect.top) / currentZoom;
+
+      drawingCtx.lineTo(x, y);
+      drawingCtx.stroke();
+    }
+
+    function stopDrawing() {
+      if (!isDrawing) return;
+      isDrawing = false;
+      drawingCtx.closePath();
+      const canvas = document.getElementById('drawingCanvas');
+      const page = getCurrentPage();
+      if (page) {
+        page.drawingData = canvas.toDataURL();
+        saveToLocalStorage(false);
+      }
+    }
+
+    function loadDrawingToCanvas(dataUrl) {
+      const canvas = document.getElementById('drawingCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, SHEET_WIDTH, SHEET_HEIGHT);
+      if (dataUrl) {
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0);
+        };
+        img.src = dataUrl;
+      }
+    }
+
+    function toggleDrawMode() {
+      isDrawMode = !isDrawMode;
+      const btn = document.getElementById('drawModeBtn');
+      const iconWrap = document.getElementById('drawIconWrap');
+      const canvas = document.getElementById('drawingCanvas');
+
+      if (isDrawMode) {
+        selectedItemId = null;
+        renderAll();
+        btn.classList.add('bg-amber-100', 'text-amber-800');
+        iconWrap.className = 'w-9 h-9 rounded-lg bg-amber-600 text-white flex items-center justify-center transition shadow-sm';
+        canvas.style.pointerEvents = 'auto';
+        toggleDrawer('draw');
+      } else {
+        btn.classList.remove('bg-amber-100', 'text-amber-800');
+        iconWrap.className = 'w-9 h-9 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center transition';
+        canvas.style.pointerEvents = 'none';
+        closeDrawer();
+      }
+      renderAll();
+    }
+
+    // =========================================================================
+    // PAINEL LATERAL (DRAWERS: ADESIVOS, CARIMBOS, PAPEL, DESENHO)
+    // =========================================================================
+    function toggleDrawer(type) {
+      const drawer = document.getElementById('sideDrawer');
+      const title = document.getElementById('drawerTitle');
+      const content = document.getElementById('drawerContent');
+
+      drawer.classList.remove('hidden');
+      drawer.classList.add('flex');
+
+      if (type === 'stickers') {
+        title.textContent = 'Adesivos & Carimbos';
+        const emojis = ['❤️', '⭐', '✨', '🎀', '💌', '🌸', '☕', '🍀', '📷', '✈️', '🎂', '💍', '🌻', '🧸', '🎵', '💡', '📍', '🎞️', '🦋', '🌿'];
+        const todayShort = new Date().toLocaleDateString('pt-BR');
+        content.innerHTML = `
+          <div>
+            <p class="text-xs font-semibold text-stone-600 mb-2">Carimbos de Data & Selos</p>
+            <div class="flex flex-col gap-1.5">
+              <button onclick="addStampItem('${todayShort}')" class="w-full py-2 px-3 rounded-xl border-2 border-dashed border-red-700/60 text-red-700 font-serif font-bold text-xs tracking-widest hover:bg-red-50 transition">
+                ${todayShort}
+              </button>
+              <button onclick="addStampItem('MOMENTO ESPECIAL')" class="w-full py-2 px-3 rounded-xl border-2 border-dashed border-amber-700/60 text-amber-800 font-serif font-bold text-xs tracking-widest hover:bg-amber-50 transition">
+                MOMENTO ESPECIAL
+              </button>
+            </div>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-stone-600 mb-2">Adesivos Ilustrados</p>
+            <div class="grid grid-cols-4 gap-2">
+              ${emojis.map(em => `<button onclick="addSticker('${em}')" class="h-11 text-2xl bg-stone-50 hover:bg-amber-100 rounded-xl flex items-center justify-center transition">${em}</button>`).join('')}
+            </div>
+          </div>
+        `;
+      } else if (type === 'paper') {
+        title.textContent = 'Estilo do Papel';
+        const papers = [
+          { id: 'paper-cream', label: 'Creme Clássico' },
+          { id: 'paper-kraft', label: 'Kraft Rústico' },
+          { id: 'paper-dots', label: 'Pontilhado' },
+          { id: 'paper-lined', label: 'Caderno Pautado' },
+          { id: 'paper-blush', label: 'Rosa Blush' },
+          { id: 'paper-sage', label: 'Verde Sálvia' },
+          { id: 'paper-cover', label: 'Capa Dura Couro' }
+        ];
+        content.innerHTML = `
+          <div class="flex flex-col gap-2">
+            ${papers.map(p => `
+              <button onclick="setPaperStyle('${p.id}')" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium hover:bg-amber-50 border border-stone-200 flex items-center justify-between transition ${getCurrentPage().paper === p.id ? 'border-amber-600 bg-amber-50/50 text-amber-800' : 'text-stone-700'}">
+                <span>${p.label}</span>
+                <div class="w-4 h-4 rounded-full border border-stone-300 ${p.id}"></div>
+              </button>
+            `).join('')}
+          </div>
+        `;
+      } else if (type === 'draw') {
+        title.textContent = 'Ferramentas de Desenho';
+        content.innerHTML = `
+          <div class="flex flex-col gap-3">
+            <label class="text-xs font-semibold text-stone-600">Cor do Pincel</label>
+            <div class="flex gap-2">
+              <button onclick="setBrushColor('#1c1917')" class="w-7 h-7 rounded-full bg-stone-900 border-2 border-white shadow-xs"></button>
+              <button onclick="setBrushColor('#b91c1c')" class="w-7 h-7 rounded-full bg-red-700 border-2 border-white shadow-xs"></button>
+              <button onclick="setBrushColor('#1d4ed8')" class="w-7 h-7 rounded-full bg-blue-700 border-2 border-white shadow-xs"></button>
+              <button onclick="setBrushColor('#15803d')" class="w-7 h-7 rounded-full bg-green-700 border-2 border-white shadow-xs"></button>
+              <button onclick="setBrushColor('#b45309')" class="w-7 h-7 rounded-full bg-amber-700 border-2 border-white shadow-xs"></button>
+              <button onclick="setBrushColor('#7e22ce')" class="w-7 h-7 rounded-full bg-purple-700 border-2 border-white shadow-xs"></button>
+            </div>
+            <label class="text-xs font-semibold text-stone-600 mt-2">Espessura (${brushSize}px)</label>
+            <input type="range" min="2" max="24" value="${brushSize}" oninput="setBrushSize(this.value)" class="accent-amber-600 cursor-pointer" />
+            <div class="flex gap-2 mt-2">
+              <button onclick="setEraser(false)" class="flex-1 py-1.5 rounded-lg text-xs font-medium border ${!isEraser ? 'bg-amber-600 text-white border-amber-600' : 'border-stone-200 text-stone-700'}">Pincel</button>
+              <button onclick="setEraser(true)" class="flex-1 py-1.5 rounded-lg text-xs font-medium border ${isEraser ? 'bg-amber-600 text-white border-amber-600' : 'border-stone-200 text-stone-700'}">Borracha</button>
+            </div>
+            <button onclick="clearCanvasDrawing()" class="mt-2 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium transition">Limpar Desenhos da Página</button>
+          </div>
+        `;
+      }
+    }
+
+    function closeDrawer() {
+      const drawer = document.getElementById('sideDrawer');
+      drawer.classList.add('hidden');
+      drawer.classList.remove('flex');
+    }
+
+    // =========================================================================
+    // ADIÇÃO DE ELEMENTOS AO ÁLBUM
+    // =========================================================================
+    function handlePhotoUpload(e) {
+      const files = e.target.files;
+      if (!files || files.length === 0) return;
+
+      pushHistory();
+      Array.from(files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const newItem = {
+            id: generateId(),
+            type: 'photo',
+            x: 80 + (index * 30) % 300,
+            y: 80 + (index * 30) % 180,
+            width: 320,
+            rotation: (Math.random() * 6 - 3),
+            src: event.target.result,
+            frame: 'frame-polaroid',
+            filter: 'filter-none',
+            caption: 'Minha lembrança'
+          };
+          getCurrentPage().items.push(newItem);
+          selectItem(newItem.id);
+          renderAll();
+          saveToLocalStorage(false);
+        };
+        reader.readAsDataURL(file);
+      });
+      e.target.value = '';
+    }
+
+    function addTextItem() {
+      pushHistory();
+      const newItem = {
+        id: generateId(),
+        type: 'text',
+        x: 150,
+        y: 180,
+        width: 380,
+        rotation: 0,
+        content: 'Escreva sua história aqui...',
+        fontFamily: "'Caveat', cursive",
+        fontSize: 30,
+        color: '#292524',
+        bgColor: 'transparent',
+        align: 'left'
+      };
+      getCurrentPage().items.push(newItem);
+      selectItem(newItem.id);
+      renderAll();
+      saveToLocalStorage(false);
+    }
+
+    function addStickyNote() {
+      pushHistory();
+      const newItem = {
+        id: generateId(),
+        type: 'sticky',
+        x: 300,
+        y: 200,
+        width: 240,
+        rotation: 2,
+        content: 'Nota rápida...',
+        fontFamily: "'Patrick Hand', cursive",
+        fontSize: 20,
+        color: '#422006',
+        bgColor: '#fef08a',
+        align: 'left'
+      };
+      getCurrentPage().items.push(newItem);
+      selectItem(newItem.id);
+      renderAll();
+      saveToLocalStorage(false);
+    }
+
+    function addStampItem(text) {
+      pushHistory();
+      const newItem = {
+        id: generateId(),
+        type: 'stamp',
+        x: 320,
+        y: 260,
+        width: 200,
+        rotation: -6,
+        content: text,
+        color: '#b91c1c',
+        fontSize: 15
+      };
+      getCurrentPage().items.push(newItem);
+      selectItem(newItem.id);
+      renderAll();
+      saveToLocalStorage(false);
+    }
+
+    function addSticker(emoji) {
+      pushHistory();
+      const newItem = {
+        id: generateId(),
+        type: 'sticker',
+        x: 380,
+        y: 240,
+        width: 80,
+        rotation: 0,
+        emoji: emoji
+      };
+      getCurrentPage().items.push(newItem);
+      selectItem(newItem.id);
+      renderAll();
+      saveToLocalStorage(false);
+    }
+
+    function setPaperStyle(styleId) {
+      pushHistory();
+      getCurrentPage().paper = styleId;
+      renderAll();
+      saveToLocalStorage(false);
+    }
+
+    function setBrushColor(color) {
+      brushColor = color;
+      isEraser = false;
+    }
+
+    function setBrushSize(size) {
+      brushSize = parseInt(size);
+    }
+
+    function setEraser(val) {
+      isEraser = val;
+    }
+
+    function clearCanvasDrawing() {
+      pushHistory();
+      const page = getCurrentPage();
+      page.drawingData = null;
+      loadDrawingToCanvas(null);
+      saveToLocalStorage(false);
+    }
+
+    function deleteSelectedItem() {
+      if (!selectedItemId) return;
+      pushHistory();
+      const page = getCurrentPage();
+      page.items = page.items.filter(i => i.id !== selectedItemId);
+      selectedItemId = null;
+      renderAll();
+      saveToLocalStorage(false);
+    }
+
+    // =========================================================================
+    // BARRA CONTEXTUAL DO ELEMENTO SELECIONADO
+    // =========================================================================
+    function updateContextToolbar() {
+      const toolbar = document.getElementById('contextToolbar');
+      if (!selectedItemId) {
+        if (!isDrawMode) {
+          toolbar.innerHTML = `
+            <span class="text-xs text-stone-500 flex items-center gap-1.5">
+              <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-amber-600"></i>
+              Clique em um elemento para selecioná-lo, movê-lo pela alça superior ou redimensioná-lo.
+            </span>
+          `;
+        } else {
+          toolbar.innerHTML = `
+            <span class="text-xs font-medium text-amber-700 flex items-center gap-1.5">
+              <i data-lucide="pen-tool" class="w-3.5 h-3.5"></i>
+              Modo Desenho Livre Ativo. Desenhe diretamente sobre a folha.
+            </span>
+          `;
+        }
+        return;
+      }
+
+      const page = getCurrentPage();
+      const item = page.items.find(i => i.id === selectedItemId);
+      if (!item) return;
+
+      let html = `
+        <div class="flex items-center gap-2 overflow-x-auto py-1">
+          <button onclick="bringToFront()" class="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium flex items-center gap-1 transition shrink-0" title="Avançar camada">
+            <i data-lucide="layers" class="w-3.5 h-3.5"></i> Frente
+          </button>
+      `;
+
+      if (item.type === 'photo') {
+        html += `
+          <select onchange="changePhotoFrame(this.value)" class="bg-stone-100 border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 outline-none shrink-0">
+            <option value="frame-polaroid" ${item.frame === 'frame-polaroid' ? 'selected' : ''}>Polaroid</option>
+            <option value="frame-classic" ${item.frame === 'frame-classic' ? 'selected' : ''}>Moldura Clássica</option>
+            <option value="frame-rounded" ${item.frame === 'frame-rounded' ? 'selected' : ''}>Arredondada</option>
+            <option value="frame-clipped" ${item.frame === 'frame-clipped' ? 'selected' : ''}>Com Clipe</option>
+            <option value="frame-taped" ${item.frame === 'frame-taped' ? 'selected' : ''}>Fita Amarela</option>
+            <option value="frame-taped-pink" ${item.frame === 'frame-taped-pink' ? 'selected' : ''}>Fita Rosa</option>
+            <option value="frame-taped-blue" ${item.frame === 'frame-taped-blue' ? 'selected' : ''}>Fita Azul</option>
+          </select>
+          <select onchange="changePhotoFilter(this.value)" class="bg-stone-100 border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 outline-none shrink-0" title="Filtro da Foto">
+            <option value="filter-none" ${(item.filter || 'filter-none') === 'filter-none' ? 'selected' : ''}>Cor Original</option>
+            <option value="filter-vintage" ${item.filter === 'filter-vintage' ? 'selected' : ''}>Filtro Vintage</option>
+            <option value="filter-bw" ${item.filter === 'filter-bw' ? 'selected' : ''}>Preto e Branco</option>
+            <option value="filter-sepia" ${item.filter === 'filter-sepia' ? 'selected' : ''}>Sépia Retrô</option>
+            <option value="filter-vivid" ${item.filter === 'filter-vivid' ? 'selected' : ''}>Cores Vivas</option>
+            <option value="filter-soft" ${item.filter === 'filter-soft' ? 'selected' : ''}>Suave Pastel</option>
+          </select>
+        `;
+      } else if (item.type === 'text' || item.type === 'sticky') {
+        html += `
+          <select onchange="changeFont(this.value)" class="bg-stone-100 border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 outline-none shrink-0">
+            <option value="'Caveat', cursive" ${item.fontFamily.includes('Caveat') ? 'selected' : ''}>Caveat</option>
+            <option value="'Dancing Script', cursive" ${item.fontFamily.includes('Dancing') ? 'selected' : ''}>Dancing</option>
+            <option value="'Patrick Hand', cursive" ${item.fontFamily.includes('Patrick') ? 'selected' : ''}>Patrick</option>
+            <option value="'Lora', serif" ${item.fontFamily.includes('Lora') ? 'selected' : ''}>Lora</option>
+            <option value="'Inter', sans-serif" ${item.fontFamily.includes('Inter') ? 'selected' : ''}>Inter</option>
+          </select>
+          <div class="flex items-center gap-1 bg-stone-100 rounded-lg p-0.5 border border-stone-200 shrink-0">
+            <button onclick="adjustFontSize(-2)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold">-</button>
+            <span class="text-xs font-medium px-1">${item.fontSize || 28}px</span>
+            <button onclick="adjustFontSize(2)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold">+</button>
+          </div>
+          <input type="color" value="${item.color || '#292524'}" onchange="changeTextColor(this.value)" class="w-6 h-6 rounded border-0 cursor-pointer bg-transparent shrink-0" title="Cor do Texto" />
+        `;
+        if (item.type === 'sticky') {
+          html += `
+            <select onchange="changeStickyBg(this.value)" class="bg-stone-100 border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 outline-none shrink-0">
+              <option value="#fef08a" ${item.bgColor === '#fef08a' ? 'selected' : ''}>Amarelo</option>
+              <option value="#fed7aa" ${item.bgColor === '#fed7aa' ? 'selected' : ''}>Laranja</option>
+              <option value="#fbcfe8" ${item.bgColor === '#fbcfe8' ? 'selected' : ''}>Rosa</option>
+              <option value="#bbf7d0" ${item.bgColor === '#bbf7d0' ? 'selected' : ''}>Verde</option>
+              <option value="#e0f2fe" ${item.bgColor === '#e0f2fe' ? 'selected' : ''}>Azul</option>
+            </select>
+          `;
+        }
+      } else if (item.type === 'stamp') {
+        html += `
+          <input type="color" value="${item.color || '#b91c1c'}" onchange="changeTextColor(this.value)" class="w-6 h-6 rounded border-0 cursor-pointer bg-transparent shrink-0" title="Cor do Carimbo" />
+          <div class="flex items-center gap-1 bg-stone-100 rounded-lg p-0.5 border border-stone-200 shrink-0">
+            <button onclick="adjustFontSize(-2)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold">-</button>
+            <span class="text-xs font-medium px-1">${item.fontSize || 16}px</span>
+            <button onclick="adjustFontSize(2)" class="px-2 py-0.5 hover:bg-white rounded text-xs font-bold">+</button>
+          </div>
+        `;
+      }
+
+      html += `
+          <button onclick="deleteSelectedItem()" class="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium flex items-center gap-1 transition ml-auto shrink-0">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Excluir
+          </button>
+        </div>
+      `;
+
+      toolbar.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function bringToFront() {
+      const page = getCurrentPage();
+      const idx = page.items.findIndex(i => i.id === selectedItemId);
+      if (idx > -1 && idx < page.items.length - 1) {
+        pushHistory();
+        const item = page.items.splice(idx, 1)[0];
+        page.items.push(item);
+        renderAll();
+        saveToLocalStorage(false);
+      }
+    }
+
+    function changePhotoFrame(frameClass) {
+      const page = getCurrentPage();
+      const item = page.items.find(i => i.id === selectedItemId);
+      if (item) {
+        pushHistory();
+        item.frame = frameClass;
+        renderAll();
+        saveToLocalStorage(false);
+      }
+    }
+
+    function changePhotoFilter(filterClass) {
+      const page = getCurrentPage();
+      const item = page.items.find(i => i.id === selectedItemId);
+      if (item) {
+        pushHistory();
+        item.filter = filterClass;
+        renderAll();
+        saveToLocalStorage(false);
+      }
+    }
+
+    function changeFont(font) {
+      const page = getCurrentPage();
+      const item = page.items.find(i => i.id === selectedItemId);
+      if (item) {
+        pushHistory();
+        item.fontFamily = font;
+        renderAll();
+        saveToLocalStorage(false);
+      }
+    }
+
+    function adjustFontSize(delta) {
+      const page = getCurrentPage();
+      const item = page.items.find(i => i.id === selectedItemId);
+      if (item) {
+        pushHistory();
+        item.fontSize = Math.max(12, Math.min(96, (item.fontSize || 28) + delta));
+        renderAll();
+        saveToLocalStorage(false);
+      }
+    }
+
+    function changeTextColor(color) {
+      const page = getCurrentPage();
+      const item = page.items.find(i => i.id === selectedItemId);
+      if (item) {
+        pushHistory();
+        item.color = color;
+        renderAll();
+        saveToLocalStorage(false);
+      }
+    }
+
+    function changeStickyBg(color) {
+      const page = getCurrentPage();
+      const item = page.items.find(i => i.id === selectedItemId);
+      if (item) {
+        pushHistory();
+        item.bgColor = color;
+        renderAll();
+        saveToLocalStorage(false);
+      }
+    }
+
+    // =========================================================================
+    // NAVEGAÇÃO E VISÃO GERAL EM GRADE DAS PÁGINAS
+    // =========================================================================
+    function renderPageTabs() {
+      const container = document.getElementById('pageTabs');
+      container.innerHTML = '';
+
+      albumState.pages.forEach((p, idx) => {
+        const isSelected = idx === albumState.currentPageIndex;
+        const btn = document.createElement('button');
+        btn.className = `px-2.5 py-1 rounded-xl text-xs font-medium transition flex items-center gap-1 shrink-0 ${isSelected ? 'bg-amber-600 text-white shadow-sm' : 'bg-stone-100 hover:bg-stone-200 text-stone-700'}`;
+        btn.innerHTML = `<span>${p.isCover ? 'Capa' : idx}</span>`;
+        btn.onclick = () => {
+          albumState.currentPageIndex = idx;
+          selectedItemId = null;
+          renderAll();
+        };
+        container.appendChild(btn);
+      });
+
+      document.getElementById('prevPageBtn').disabled = albumState.currentPageIndex === 0;
+      document.getElementById('nextPageBtn').disabled = albumState.currentPageIndex === albumState.pages.length - 1;
+      document.getElementById('deletePageBtn').disabled = albumState.pages.length <= 1;
+    }
+
+    function openPageGridModal() {
+      const container = document.getElementById('pageGridContainer');
+      container.innerHTML = '';
+
+      albumState.pages.forEach((p, idx) => {
+        const isCurrent = idx === albumState.currentPageIndex;
+        const card = document.createElement('div');
+        card.className = `rounded-xl border-2 p-2.5 bg-white shadow-xs flex flex-col gap-2 transition ${isCurrent ? 'border-amber-600 ring-2 ring-amber-600/20' : 'border-stone-200 hover:border-stone-300'}`;
+        
+        const preview = document.createElement('div');
+        preview.className = `w-full aspect-[842/595] rounded border border-stone-200 relative overflow-hidden cursor-pointer flex items-center justify-center ${p.paper}`;
+        preview.onclick = () => {
+          albumState.currentPageIndex = idx;
+          selectedItemId = null;
+          renderAll();
+          closePageGridModal();
+        };
+        
+        const infoText = document.createElement('span');
+        infoText.className = `text-xs font-semibold px-2 py-1 rounded bg-black/40 text-white backdrop-blur-xs`;
+        infoText.textContent = `${p.items.length} ${p.items.length === 1 ? 'item' : 'itens'}`;
+        preview.appendChild(infoText);
+
+        const footer = document.createElement('div');
+        footer.className = 'flex items-center justify-between text-xs font-medium text-stone-700 pt-1';
+        footer.innerHTML = `
+          <span>${p.isCover ? 'Capa do Álbum' : 'Página ' + idx}</span>
+          <div class="flex items-center gap-1">
+            ${idx > 0 ? `<button onclick="movePage(${idx}, -1)" class="p-1 hover:bg-stone-100 rounded text-stone-500" title="Mover para esquerda"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i></button>` : ''}
+            ${idx < albumState.pages.length - 1 ? `<button onclick="movePage(${idx}, 1)" class="p-1 hover:bg-stone-100 rounded text-stone-500" title="Mover para direita"><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></button>` : ''}
+          </div>
+        `;
+
+        card.appendChild(preview);
+        card.appendChild(footer);
+        container.appendChild(card);
+      });
+
+      document.getElementById('pageGridModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closePageGridModal() {
+      document.getElementById('pageGridModal').classList.add('hidden');
+    }
+
+    function movePage(idx, direction) {
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= albumState.pages.length) return;
+      pushHistory();
+      const temp = albumState.pages[idx];
+      albumState.pages[idx] = albumState.pages[targetIdx];
+      albumState.pages[targetIdx] = temp;
+      albumState.currentPageIndex = targetIdx;
+      renderAll();
+      saveToLocalStorage(false);
+      openPageGridModal();
+    }
+
+    function prevPage() {
+      if (albumState.currentPageIndex > 0) {
+        albumState.currentPageIndex--;
+        selectedItemId = null;
+        renderAll();
+      }
+    }
+
+    function nextPage() {
+      if (albumState.currentPageIndex < albumState.pages.length - 1) {
+        albumState.currentPageIndex++;
+        selectedItemId = null;
+        renderAll();
+      }
+    }
+
+    function addNewPage(isCover = false) {
+      pushHistory();
+      const newPage = {
+        id: generateId(),
+        paper: isCover ? 'paper-cover' : 'paper-cream',
+        isCover: isCover,
+        drawingData: null,
+        items: []
+      };
+      albumState.pages.push(newPage);
+      albumState.currentPageIndex = albumState.pages.length - 1;
+      selectedItemId = null;
+      renderAll();
+      saveToLocalStorage(false);
+    }
+
+    function deleteCurrentPage() {
+      if (albumState.pages.length <= 1) {
+        showModal('Atenção', 'O álbum precisa ter pelo menos uma página.');
+        return;
+      }
+      showConfirmModal('Excluir Página', 'Deseja realmente excluir esta página do álbum?', () => {
+        pushHistory();
+        albumState.pages.splice(albumState.currentPageIndex, 1);
+        if (albumState.currentPageIndex >= albumState.pages.length) {
+          albumState.currentPageIndex = albumState.pages.length - 1;
+        }
+        selectedItemId = null;
+        renderAll();
+        saveToLocalStorage(false);
+      });
+    }
+
+    // =========================================================================
+    // ZOOM E AJUSTE DE TELA
+    // =========================================================================
+    function adjustZoom(delta) {
+      currentZoom = Math.max(0.4, Math.min(2.0, parseFloat((currentZoom + delta).toFixed(1))));
+      applyZoom();
+    }
+
+    function fitSheetToScreen() {
+      const viewport = document.getElementById('canvasViewport');
+      const availableWidth = viewport.clientWidth - 32;
+      const availableHeight = viewport.clientHeight - 32;
+
+      const scaleX = availableWidth / SHEET_WIDTH;
+      const scaleY = availableHeight / SHEET_HEIGHT;
+      currentZoom = parseFloat(Math.min(scaleX, scaleY, 1.2).toFixed(2));
+      applyZoom();
+    }
+
+    function applyZoom() {
+      const wrapper = document.getElementById('paperWrapper');
+      wrapper.style.transform = `scale(${currentZoom})`;
+      document.getElementById('zoomLabel').textContent = `${Math.round(currentZoom * 100)}%`;
+    }
+
+    // =========================================================================
+    // COMPARTILHAMENTO NATIVO ANDROID, JSON & PDF
+    // =========================================================================
+    async function shareCurrentPage() {
+      const overlay = document.getElementById('pdfOverlay');
+      document.getElementById('overlayTitle').textContent = 'Preparando Imagem...';
+      document.getElementById('pdfProgressText').textContent = 'Gerando captura da página atual';
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+
+      selectedItemId = null;
+      renderAll();
+      document.body.classList.add('exporting-mode');
+
+      try {
+        await new Promise(resolve => setTimeout(resolve, 250));
+        const sheet = document.getElementById('paperSheet');
+        const canvasImg = await html2canvas(sheet, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false
+        });
+
+        canvasImg.toBlob(async (blob) => {
+          const fileName = `${albumState.title.replace(/\s+/g, '_')}_pagina_${albumState.currentPageIndex + 1}.png`;
+          const file = new File([blob], fileName, { type: 'image/png' });
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: albumState.title,
+              text: 'Confira esta página do meu álbum de recordações!'
+            });
+          } else {
+            // Fallback: Download direto da imagem caso o navegador não suporte Web Share Files
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+            showModal('Imagem Salva', 'A imagem da página atual foi salva no seu dispositivo.');
+          }
+        }, 'image/png');
+      } catch (err) {
+        console.error('Erro ao compartilhar:', err);
+        showModal('Aviso', 'Não foi possível compartilhar a página neste dispositivo.');
+      } finally {
+        document.body.classList.remove('exporting-mode');
+        renderAll();
+        overlay.classList.remove('flex');
+        overlay.classList.add('hidden');
+      }
+    }
+
+    function saveToLocalStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(albumState));
+      const status = document.getElementById('saveStatus');
+      status.textContent = 'Salvo automaticamente';
+      setTimeout(() => {
+        if (status.textContent === 'Salvo automaticamente') status.textContent = '';
+      }, 2500);
+    }
+
+    function loadFromLocalStorage() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (data) {
+        try {
+          albumState = JSON.parse(data);
+        } catch (e) {
+          console.error('Erro ao carregar dados locais', e);
+        }
+      }
+    }
+
+    function exportProjectJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(albumState, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `${albumState.title.replace(/\s+/g, '_')}_backup.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importProjectJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (imported.pages && Array.isArray(imported.pages)) {
+            pushHistory();
+            albumState = imported;
+            document.getElementById('albumTitleInput').value = albumState.title;
+            albumState.currentPageIndex = 0;
+            selectedItemId = null;
+            renderAll();
+            saveToLocalStorage(false);
+            showModal('Sucesso', 'Álbum importado com sucesso!');
+          } else {
+            showModal('Erro', 'Arquivo de backup inválido.');
+          }
+        } catch (err) {
+          showModal('Erro', 'Não foi possível ler o arquivo JSON.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function openResetModal() {
+      showConfirmModal('Novo Álbum', 'Criar um novo álbum apagará o álbum atual. Deseja continuar?', () => {
+        pushHistory();
+        localStorage.removeItem(STORAGE_KEY);
+        initDefaultAlbum();
+        document.getElementById('albumTitleInput').value = albumState.title;
+        selectedItemId = null;
+        renderAll();
+        saveToLocalStorage(false);
+      });
+    }
+
+    async function exportToPDF() {
+      const overlay = document.getElementById('pdfOverlay');
+      const progressText = document.getElementById('pdfProgressText');
+      document.getElementById('overlayTitle').textContent = 'Gerando seu Álbum em PDF...';
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+
+      selectedItemId = null;
+      renderAll();
+
+      document.body.classList.add('exporting-mode');
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [SHEET_WIDTH, SHEET_HEIGHT]
+      });
+
+      const originalPageIndex = albumState.currentPageIndex;
+
+      try {
+        for (let i = 0; i < albumState.pages.length; i++) {
+          albumState.currentPageIndex = i;
+          renderAll();
+          progressText.textContent = `Processando página ${i + 1} de ${albumState.pages.length}...`;
+          
+          await new Promise(resolve => setTimeout(resolve, 350));
+
+          const sheet = document.getElementById('paperSheet');
+          const canvasImg = await html2canvas(sheet, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false
+          });
+
+          const imgData = canvasImg.toDataURL('image/jpeg', 0.92);
+          if (i > 0) {
+            pdf.addPage([SHEET_WIDTH, SHEET_HEIGHT], 'landscape');
+          }
+          pdf.addImage(imgData, 'JPEG', 0, 0, SHEET_WIDTH, SHEET_HEIGHT);
+        }
+
+        pdf.save(`${albumState.title.replace(/\s+/g, '_')}.pdf`);
+      } catch (err) {
+        console.error('Erro ao gerar PDF:', err);
+        showModal('Erro', 'Ocorreu um erro ao gerar o arquivo PDF.');
+      } finally {
+        albumState.currentPageIndex = originalPageIndex;
+        document.body.classList.remove('exporting-mode');
+        renderAll();
+        overlay.classList.remove('flex');
+        overlay.classList.add('hidden');
+      }
+    }
+
+    // =========================================================================
+    // MODAIS CUSTOMIZADOS
+    // =========================================================================
+    function showModal(title, message) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalMessage').textContent = message;
+      document.getElementById('modalActions').innerHTML = `
+        <button onclick="closeModal()" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold transition">OK</button>
+      `;
+      document.getElementById('customModal').classList.remove('hidden');
+    }
+
+    function showConfirmModal(title, message, onConfirm) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalMessage').textContent = message;
+      document.getElementById('modalActions').innerHTML = `
+        <button onclick="closeModal()" class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold transition">Cancelar</button>
+        <button id="modalConfirmBtn" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition">Confirmar</button>
+      `;
+      document.getElementById('modalConfirmBtn').onclick = () => {
+        onConfirm();
+        closeModal();
+      };
+      document.getElementById('customModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('customModal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
