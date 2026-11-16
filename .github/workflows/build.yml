@@ -36,7 +36,7 @@ jobs:
           npx cap init "Scrapbook Digital" com.seuapp.scrapbook --web-dir www
           npx cap add android
           
-          # Gera automaticamente o ícone nativo do Android usando o icon-512.png da raiz
+          # Gera e injeta automaticamente os ícones nativos usando o icon-512.png da raiz
           if [ -f "www/icon-512.png" ]; then
             npx capacitor-assets generate --android --iconBackgroundColor "#d97706" || true
           fi
