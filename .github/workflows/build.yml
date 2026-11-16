@@ -37,7 +37,6 @@ jobs:
 
       - name: Inserir Icones Personalizados Corretamente no Android
         run: |
-          # Copia o icon-512.png da raiz para a pasta www se necessário e injeta nas resoluções mipmap do Android
           if [ -f icon-512.png ]; then
             mkdir -p android/app/src/main/res/mipmap-hdpi
             mkdir -p android/app/src/main/res/mipmap-mdpi
@@ -63,6 +62,24 @@ jobs:
             cp icon-512.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png
             cp icon-512.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
           fi
+
+      - name: Ajustar Conflitos do Kotlin e SDK do Android
+        run: |
+          # Forcar compileSdk 35, targetSdk 35 e minSdk 23 no Gradle
+          echo "android { compileSdk 35; defaultConfig { targetSdk 35; minSdk 23; } }" >> android/app/build.gradle
+          
+          # Inserir resolucao de conflitos de dependencias kotlin no projeto raiz do android
+          cat << 'EOF' >> android/build.gradle
+          subprojects {
+              project.configurations.all {
+                  resolutionStrategy.eachDependency { details ->
+                      if (details.requested.group == 'org.jetbrains.kotlin') {
+                          details.useVersion '1.9.0'
+                      }
+                  }
+              }
+          }
+          EOF
 
       - name: Compilar o APK (Debug Assinado)
         run: |
