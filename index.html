@@ -135,6 +135,9 @@
           <button onclick="exportProjectJSON(); closeMenuDropdown();" class="w-full text-left px-4 py-2.5 text-xs font-medium text-stone-700 hover:bg-amber-50 flex items-center gap-2.5 transition">
             <i data-lucide="download" class="w-4 h-4 text-amber-600"></i> Exportar Backup (.json)
           </button>
+          <button onclick="openFilesModal(); closeMenuDropdown();" class="w-full text-left px-4 py-2.5 text-xs font-medium text-stone-700 hover:bg-amber-50 flex items-center gap-2.5 transition">
+            <i data-lucide="folder-archive" class="w-4 h-4 text-amber-600"></i> Meus Trabalhos Salvos
+          </button>
           <label class="w-full text-left px-4 py-2.5 text-xs font-medium text-stone-700 hover:bg-amber-50 flex items-center gap-2.5 cursor-pointer transition">
             <i data-lucide="upload" class="w-4 h-4 text-amber-600"></i> Importar Backup (.json)
             <input type="file" accept=".json" onchange="importProjectJSON(event); closeMenuDropdown();" class="hidden" />
@@ -263,6 +266,22 @@
       <div class="p-3 border-t border-stone-100 bg-white flex justify-between items-center">
         <button onclick="addNewPage(false); closePageGridModal();" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 transition"><i data-lucide="plus" class="w-4 h-4"></i> Adicionar Página</button>
         <button onclick="closePageGridModal()" class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold transition">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="filesModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full max-h-[85dvh] flex flex-col shadow-2xl border border-stone-100 overflow-hidden">
+      <div class="p-4 border-b border-stone-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="folder-archive" class="w-5 h-5 text-amber-600"></i>
+          <h3 class="font-bold text-stone-800 text-base">Meus Trabalhos Salvos</h3>
+        </div>
+        <button onclick="closeFilesModal()" class="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="filesListContainer" class="p-4 overflow-y-auto flex flex-col gap-2.5 bg-stone-50 flex-1"></div>
+      <div class="p-3 border-t border-stone-100 bg-white flex justify-end">
+        <button onclick="closeFilesModal()" class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold transition">Fechar</button>
       </div>
     </div>
   </div>
@@ -973,65 +992,114 @@
       });
     }
 
-    // Função universal definitiva com Capacitor Filesystem para Android e PC
+    // Sistema de Histórico Interno e Armazenamento Seguro
+    function registrarArquivoInterno(fileName, mimeType, base64Data) {
+      let arquivosSalvos = JSON.parse(localStorage.getItem('scrapbook_historico_arquivos') || '[]');
+      arquivosSalvos.unshift({
+        id: 'file_' + Date.now(),
+        name: fileName,
+        type: mimeType,
+        date: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
+        data: base64Data
+      });
+      if (arquivosSalvos.length > 15) arquivosSalvos.pop();
+      localStorage.setItem('scrapbook_historico_arquivos', JSON.stringify(arquivosSalvos));
+    }
+
+    function openFilesModal() {
+      const container = document.getElementById('filesListContainer');
+      container.innerHTML = '';
+      let arquivosSalvos = JSON.parse(localStorage.getItem('scrapbook_historico_arquivos') || '[]');
+
+      if (arquivosSalvos.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-stone-400 text-xs">Nenhum arquivo gerado ainda. Crie um PDF ou backup JSON para vê-lo aqui.</div>`;
+      } else {
+        arquivosSalvos.forEach(file => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'bg-white p-3 rounded-xl border border-stone-200 flex items-center justify-between shadow-xs gap-2';
+          itemDiv.innerHTML = `
+            <div class="min-w-0 flex-1">
+              <p class="font-bold text-xs text-stone-800 truncate">${file.name}</p>
+              <p class="text-[10px] text-stone-400">${file.date}</p>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button onclick="baixarArquivoSalvo('${file.id}')" class="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold transition flex items-center gap-1">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i> Baixar
+              </button>
+              <button onclick="excluirArquivoSalvo('${file.id}')" class="p-1.5 rounded-lg hover:bg-red-50 text-stone-400 hover:text-red-600 transition">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          `;
+          container.appendChild(itemDiv);
+        });
+      }
+      document.getElementById('filesModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeFilesModal() {
+      document.getElementById('filesModal').classList.add('hidden');
+    }
+
+    function excluirArquivoSalvo(id) {
+      let arquivosSalvos = JSON.parse(localStorage.getItem('scrapbook_historico_arquivos') || '[]');
+      arquivosSalvos = arquivosSalvos.filter(f => f.id !== id);
+      localStorage.setItem('scrapbook_historico_arquivos', JSON.stringify(arquivosSalvos));
+      openFilesModal();
+    }
+
+    function baixarArquivoSalvo(id) {
+      let arquivosSalvos = JSON.parse(localStorage.getItem('scrapbook_historico_arquivos') || '[]');
+      let file = arquivosSalvos.find(f => f.id === id);
+      if (!file) return;
+
+      const byteCharacters = atob(file.data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: file.type });
+
+      salvarOuCompartilharArquivo(blob, file.name, file.type);
+    }
+
     async function salvarOuCompartilharArquivo(blob, fileName, mimeType) {
       try {
-        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-          const reader = new FileReader();
-          reader.readAsDataURL(blob);
-          reader.onloadend = async () => {
-            const base64Data = reader.result.split(',')[1];
-            try {
-              await Capacitor.Plugins.Filesystem.writeFile({
-                path: fileName,
-                data: base64Data,
-                directory: 'CACHE'
-              });
-              
-              if (navigator.canShare) {
-                const file = new File([blob], fileName, { type: mimeType });
-                await navigator.share({
-                  files: [file],
-                  title: 'Scrapbook Digital',
-                  text: `Arquivo gerado: ${fileName}`
-                });
-              } else {
-                showModal('Sucesso', `Arquivo salvo no celular: ${fileName}`);
-              }
-            } catch (fsErr) {
-              console.error('Erro no Filesystem nativo:', fsErr);
-              fallbackDownload(blob, fileName);
-            }
-          };
-          return;
-        }
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = () => {
+          const base64Data = reader.result.split(',')[1];
+          registrarArquivoInterno(fileName, mimeType, base64Data);
+        };
 
         const file = new File([blob], fileName, { type: mimeType });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'Scrapbook Digital', text: `Arquivo: ${fileName}` });
+          await navigator.share({
+            files: [file],
+            title: 'Scrapbook Digital',
+            text: `Aqui está o seu arquivo: ${fileName}`
+          });
           return;
         }
 
-        fallbackDownload(blob, fileName);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 1000);
 
       } catch (err) {
         if (err.name === 'AbortError') return;
-        console.error('Erro ao salvar arquivo:', err);
-        fallbackDownload(blob, fileName);
+        console.error('Erro ao salvar/compartilhar arquivo:', err);
+        showModal('Erro', 'Não foi possível exportar o arquivo neste dispositivo. Acesse "Meus Trabalhos Salvos" no menu para recuperá-lo.');
       }
-    }
-
-    function fallbackDownload(blob, fileName) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 1000);
     }
 
     async function exportProjectJSON() {
