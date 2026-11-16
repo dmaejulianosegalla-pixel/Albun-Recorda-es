@@ -320,6 +320,11 @@
     const MAX_HISTORY = 25;
     let selectedItemId = null, currentZoom = 1, isDrawMode = false, brushColor = '#1c1917', brushSize = 4, isEraser = false;
 
+    function isMobileDevice() {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+             (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+    }
+
     // Controle de Pinch-to-Zoom Global (Dois Dedos)
     let globalPinchInitialDist = null;
     let globalPinchInitialZoom = 1;
@@ -1120,7 +1125,7 @@
     }
 
     // =========================================================================
-    // SISTEMA DE ARMAZENAMENTO OPFS PARA PDFs E BACKUPS EXPORTADOS
+    // SISTEMA DE ARMAZENAMENTO OPFS E DOWNLOAD HÍBRIDO (PC E ANDROID)
     // =========================================================================
 
     async function getOpfsExportsDirectory() {
@@ -1182,7 +1187,7 @@
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
                 <button onclick="baixarArquivoDoOPFS('${file.name}')" class="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold transition flex items-center gap-1">
-                  <i data-lucide="share-2" class="w-3.5 h-3.5"></i> Abrir/Enviar
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i> Baixar/Abrir
                 </button>
                 <button onclick="excluirArquivoDoOPFS('${file.name}')" class="p-1.5 rounded-lg hover:bg-red-50 text-stone-400 hover:text-red-600 transition">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -1231,30 +1236,35 @@
     }
 
     async function salvarOuCompartilharArquivo(blob, fileName, mimeType, salvarCopiaOPFS = true) {
+      // 1. Grava uma cópia física no armazenamento privado OPFS (offline)
       if (salvarCopiaOPFS) {
         await gravarNoOPFS(fileName, blob);
       }
 
-      if ('showSaveFilePicker' in window) {
+      // 2. FLUXO PARA PC (Windows/Mac/Linux): Download direto na pasta Downloads
+      if (!isMobileDevice()) {
         try {
-          const ext = fileName.split('.').pop();
-          const handle = await window.showSaveFilePicker({
-            suggestedName: fileName,
-            types: [{
-              description: 'Arquivo do Álbum',
-              accept: { [mimeType]: ['.' + ext] }
-            }]
-          });
-          const writable = await handle.createWritable();
-          await writable.write(blob);
-          await writable.close();
-          showModal('Salvo com Sucesso', `O arquivo "${fileName}" foi salvo na pasta selecionada e no histórico offline do app.`);
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 2000);
+
+          showModal('Download Concluído', `O arquivo "${fileName}" foi baixado para a sua pasta Downloads (e salvo no histórico interno do app).`);
           return;
-        } catch (pickerErr) {
-          if (pickerErr.name === 'AbortError') return;
+        } catch (pcErr) {
+          console.error('Erro ao baixar no PC:', pcErr);
         }
       }
 
+      // 3. FLUXO PARA CELULAR (Android): Bandeja nativa de compartilhamento/salvamento
       try {
         const file = new File([blob], fileName, { type: mimeType });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -1267,12 +1277,14 @@
         }
       } catch (shareErr) {
         if (shareErr.name === 'AbortError') return;
-        console.warn('Web Share API indisponível ou bloqueada:', shareErr);
+        console.warn('Web Share API indisponível:', shareErr);
       }
 
+      // 4. Fallback universal
       try {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
+        a.style.display = 'none';
         a.href = url;
         a.download = fileName;
         document.body.appendChild(a);
@@ -1280,10 +1292,9 @@
         setTimeout(() => {
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
-        }, 1000);
-        showModal('Arquivo Salvo Offline', `O arquivo "${fileName}" foi gravado no armazenamento interno do app. Acesse "Meus Trabalhos Salvos" no menu para visualizá-lo.`);
+        }, 2000);
       } catch (err) {
-        showModal('Salvo no App', `O arquivo "${fileName}" foi salvo internamente no armazenamento offline (OPFS). Abra "Meus Trabalhos Salvos" no menu superior.`);
+        showModal('Salvo no App', `O arquivo "${fileName}" foi salvo internamente no armazenamento offline. Abra "Meus Trabalhos Salvos" no menu.`);
       }
     }
 
@@ -1344,13 +1355,14 @@
           await new Promise(r => setTimeout(r, 80));
         }
 
-        progressText.textContent = 'Gravando arquivo PDF no armazenamento local...';
-        const pdfBlob = pdf.output('blob');
+        progressText.textContent = 'Finalizando arquivo PDF...';
+        const arrayBuffer = pdf.output('arraybuffer');
+        const pdfBlob = new Blob([arrayBuffer], { type: 'application/pdf' });
         await salvarOuCompartilharArquivo(pdfBlob, fileName, 'application/pdf', true);
 
       } catch (err) {
         console.error('Erro ao gerar PDF:', err);
-        showModal('Erro', 'Não foi possível gerar o PDF no celular.');
+        showModal('Erro', 'Não foi possível gerar o PDF.');
       } finally {
         albumState.currentPageIndex = origIdx;
         document.body.classList.remove('exporting-mode');
