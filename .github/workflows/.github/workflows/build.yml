@@ -1,0 +1,48 @@
+name: Compilar APK Scrapbook
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar código do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Java JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Organizar arquivos e preparar Capacitor
+        run: |
+          mkdir -p www
+          find . -maxdepth 1 ! -name '.' ! -name 'www' ! -name '.github' ! -name 'android' ! -name '.git' -exec mv -t www {} +
+          
+          echo '{"name":"scrapbook-digital","version":"1.0.0","private":true}' > package.json
+          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+          npx cap init "Scrapbook Digital" com.seuapp.scrapbook --web-dir www
+          npx cap add android
+          npx cap copy android
+
+      - name: Compilar APK (Gradle)
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Disponibilizar APK para download
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrapbook-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
