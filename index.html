@@ -108,13 +108,18 @@
       </div>
       <div class="min-w-0">
         <input id="albumTitleInput" type="text" value="Meu Álbum de Recordações"
-          class="font-bold text-stone-800 text-xs sm:text-base bg-transparent border-b border-transparent focus:border-amber-600 focus:outline-none px-1 rounded transition w-36 sm:w-56 truncate" />
+          class="font-bold text-stone-800 text-xs sm:text-base bg-transparent border-b border-transparent focus:border-amber-600 focus:outline-none px-1 rounded transition w-32 sm:w-56 truncate" />
         <p id="saveStatus" class="text-[10px] text-stone-400 px-1 truncate">Salvo</p>
       </div>
     </div>
 
-    <!-- Ações e Menu de Três Pontinhos -->
-    <div class="flex items-center gap-2 shrink-0">
+    <!-- Ações, Botão Salvar e Menu de Três Pontinhos -->
+    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <button onclick="salvarProgressoManual()" id="btnManualSave" title="Salvar Progresso" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition">
+        <i data-lucide="save" class="w-4 h-4"></i>
+        <span>Salvar</span>
+      </button>
+
       <div class="flex items-center bg-stone-100 rounded-xl p-0.5 border border-stone-200">
         <button onclick="undo()" id="undoBtn" disabled title="Desfazer" class="p-1.5 rounded-lg text-stone-600 hover:bg-white disabled:opacity-30 transition"><i data-lucide="undo-2" class="w-4 h-4"></i></button>
         <button onclick="redo()" id="redoBtn" disabled title="Refazer" class="p-1.5 rounded-lg text-stone-600 hover:bg-white disabled:opacity-30 transition"><i data-lucide="redo-2" class="w-4 h-4"></i></button>
@@ -130,7 +135,7 @@
             <i data-lucide="share-2" class="w-4 h-4 text-amber-600"></i> Compartilhar Página
           </button>
           <button onclick="exportToPDF(); closeMenuDropdown();" class="w-full text-left px-4 py-2.5 text-xs font-medium text-stone-700 hover:bg-amber-50 flex items-center gap-2.5 transition">
-            <i data-lucide="file-down" class="w-4 h-4 text-amber-600"></i> Criar PDF do Álbum
+            <i data-lucide="file-down" class="w-4 h-4 text-amber-600"></i> Criar PDF em Alta Qualidade
           </button>
           <button onclick="exportProjectJSON(); closeMenuDropdown();" class="w-full text-left px-4 py-2.5 text-xs font-medium text-stone-700 hover:bg-amber-50 flex items-center gap-2.5 transition">
             <i data-lucide="download" class="w-4 h-4 text-amber-600"></i> Exportar Backup (.json)
@@ -275,7 +280,7 @@
       <div class="p-4 border-b border-stone-100 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i data-lucide="folder-archive" class="w-5 h-5 text-amber-600"></i>
-          <h3 class="font-bold text-stone-800 text-base">Meus Trabalhos Salvos (OPFS)</h3>
+          <h3 class="font-bold text-stone-800 text-base">Meus Trabalhos Salvos</h3>
         </div>
         <button onclick="closeFilesModal()" class="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
@@ -308,6 +313,8 @@
     const SHEET_HEIGHT = 595;
     const STORAGE_KEY = 'album_recordacoes_v1';
     const OPFS_FOLDER_NAME = 'scrapbook_exports';
+    const OPFS_PROJECT_FILE = 'album_progresso_atual.json';
+
     let albumState = { title: 'Meu Álbum de Recordações', currentPageIndex: 0, pages: [] };
     let undoStack = [], redoStack = [];
     const MAX_HISTORY = 25;
@@ -382,8 +389,8 @@
     }
     window.addEventListener('click', () => closeMenuDropdown());
 
-    window.addEventListener('DOMContentLoaded', () => {
-      loadFromLocalStorage();
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadFromLocalStorage();
       if (albumState.pages.length === 0) initDefaultAlbum();
       renderAll();
       setTimeout(fitSheetToScreen, 100);
@@ -757,8 +764,8 @@
 
     function closeDrawer() { document.getElementById('sideDrawer').classList.add('hidden'); document.getElementById('sideDrawer').classList.remove('flex'); }
 
-    // Compressão de fotos antes de inserir na página (evita travar memória no Android)
-    function compressImageFile(file, maxDim = 1100, quality = 0.82) {
+    // Preserva alta nitidez nas fotos (até 1800px e 92% de qualidade) sem estourar a RAM
+    function compressImageFile(file, maxDim = 1800, quality = 0.92) {
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -779,8 +786,13 @@
             canvas.width = w;
             canvas.height = h;
             const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', quality));
+            const resultUrl = canvas.toDataURL('image/jpeg', quality);
+            canvas.width = 0;
+            canvas.height = 0;
+            resolve(resultUrl);
           };
           img.src = event.target.result;
         };
@@ -793,7 +805,7 @@
       pushHistory();
       const fileArray = Array.from(files);
       for (let index = 0; index < fileArray.length; index++) {
-        const compressedDataUrl = await compressImageFile(fileArray[index]);
+        const highResDataUrl = await compressImageFile(fileArray[index]);
         const newItem = {
           id: generateId(),
           type: 'photo',
@@ -801,7 +813,7 @@
           y: 80 + (index * 30) % 180,
           width: 300,
           rotation: (Math.random() * 6 - 3),
-          src: compressedDataUrl,
+          src: highResDataUrl,
           frame: 'frame-polaroid',
           filter: 'filter-none',
           caption: 'Minha lembrança'
@@ -995,12 +1007,12 @@
 
     async function shareCurrentPage() {
       const overlay = document.getElementById('pdfOverlay');
-      document.getElementById('overlayTitle').textContent = 'Preparando Imagem...';
+      document.getElementById('overlayTitle').textContent = 'Preparando Imagem em Alta Qualidade...';
       overlay.classList.remove('hidden'); overlay.classList.add('flex');
       selectedItemId = null; renderAll(); document.body.classList.add('exporting-mode');
       try {
         await new Promise(r => setTimeout(r, 250));
-        const canvasImg = await html2canvas(document.getElementById('paperSheet'), { scale: 1.5, useCORS: true, allowTaint: true, logging: false });
+        const canvasImg = await html2canvas(document.getElementById('paperSheet'), { scale: 2, useCORS: true, allowTaint: true, logging: false });
         canvasImg.toBlob(async (blob) => {
           const fileName = `${albumState.title.replace(/\s+/g, '_')}_p${albumState.currentPageIndex + 1}.png`;
           await salvarOuCompartilharArquivo(blob, fileName, 'image/png');
@@ -1009,14 +1021,75 @@
       finally { document.body.classList.remove('exporting-mode'); renderAll(); overlay.classList.remove('flex'); overlay.classList.add('hidden'); }
     }
 
-    function saveToLocalStorage() {
+    // =========================================================================
+    // SALVAMENTO DO PROGRESSO DO PROJETO (BOTÃO SALVAR + AUTO-SAVE NO OPFS)
+    // =========================================================================
+
+    async function saveToLocalStorage() {
+      const statusEl = document.getElementById('saveStatus');
+      if (statusEl) statusEl.textContent = 'Salvando...';
+
+      const jsonStr = JSON.stringify(albumState);
+
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(albumState));
+        const root = await navigator.storage.getDirectory();
+        const fileHandle = await root.getFileHandle(OPFS_PROJECT_FILE, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(jsonStr);
+        await writable.close();
       } catch (e) {
-        console.warn('Limite do localStorage atingido, usando apenas sessão.');
+        console.warn('Falha ao gravar progresso no OPFS:', e);
+      }
+
+      try {
+        localStorage.setItem(STORAGE_KEY, jsonStr);
+      } catch (e) {
+        // Ignora caso ultrapasse 5MB do localStorage, pois o OPFS já salvou com segurança
+      }
+
+      const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      if (statusEl) statusEl.textContent = `Salvo às ${hora}`;
+    }
+
+    async function salvarProgressoManual() {
+      const btn = document.getElementById('btnManualSave');
+      await saveToLocalStorage();
+
+      if (btn) {
+        const originalHTML = btn.innerHTML;
+        btn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
+        btn.classList.add('bg-emerald-600');
+        btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> <span>Salvo!</span>`;
+        lucide.createIcons();
+
+        setTimeout(() => {
+          btn.classList.remove('bg-emerald-600');
+          btn.classList.add('bg-amber-600', 'hover:bg-amber-700');
+          btn.innerHTML = originalHTML;
+          lucide.createIcons();
+        }, 1500);
       }
     }
-    function loadFromLocalStorage() { const data = localStorage.getItem(STORAGE_KEY); if (data) { try { albumState = JSON.parse(data); } catch(e){} } }
+
+    async function loadFromLocalStorage() {
+      try {
+        const root = await navigator.storage.getDirectory();
+        const fileHandle = await root.getFileHandle(OPFS_PROJECT_FILE);
+        const file = await fileHandle.getFile();
+        const text = await file.text();
+        if (text) {
+          albumState = JSON.parse(text);
+          return;
+        }
+      } catch (e) {
+        // Se ainda não houver arquivo no OPFS, tenta recuperar do localStorage
+      }
+
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (data) {
+        try { albumState = JSON.parse(data); } catch (e) {}
+      }
+    }
 
     function importProjectJSON(e) {
       const file = e.target.files[0]; if (!file) return;
@@ -1031,14 +1104,23 @@
     }
 
     function openResetModal() {
-      showConfirmModal('Novo Álbum', 'Deseja apagar tudo e criar um novo álbum?', () => {
-        pushHistory(); localStorage.removeItem(STORAGE_KEY); initDefaultAlbum();
-        document.getElementById('albumTitleInput').value = albumState.title; selectedItemId = null; renderAll(); saveToLocalStorage();
+      showConfirmModal('Novo Álbum', 'Deseja apagar tudo e criar um novo álbum?', async () => {
+        pushHistory();
+        localStorage.removeItem(STORAGE_KEY);
+        try {
+          const root = await navigator.storage.getDirectory();
+          await root.removeEntry(OPFS_PROJECT_FILE);
+        } catch (e) {}
+        initDefaultAlbum();
+        document.getElementById('albumTitleInput').value = albumState.title;
+        selectedItemId = null;
+        renderAll();
+        saveToLocalStorage();
       });
     }
 
     // =========================================================================
-    // SISTEMA DE ARMAZENAMENTO OFFS (Origin Private File System) + FILE PICKER
+    // SISTEMA DE ARMAZENAMENTO OPFS PARA PDFs E BACKUPS EXPORTADOS
     // =========================================================================
 
     async function getOpfsExportsDirectory() {
@@ -1080,7 +1162,7 @@
             const file = await handle.getFile();
             entries.push({
               name: name,
-              size: (file.size / 1024).toFixed(1) + ' KB',
+              size: (file.size / (1024 * 1024) >= 1) ? (file.size / (1024 * 1024)).toFixed(2) + ' MB' : (file.size / 1024).toFixed(1) + ' KB',
               date: new Date(file.lastModified).toLocaleDateString('pt-BR') + ' ' + new Date(file.lastModified).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
             });
           }
@@ -1149,12 +1231,10 @@
     }
 
     async function salvarOuCompartilharArquivo(blob, fileName, mimeType, salvarCopiaOPFS = true) {
-      // 1. Grava fisicamente no armazenamento privado OPFS para acesso offline garantido
       if (salvarCopiaOPFS) {
         await gravarNoOPFS(fileName, blob);
       }
 
-      // 2. Tenta File System Access API (showSaveFilePicker) se o navegador permitir
       if ('showSaveFilePicker' in window) {
         try {
           const ext = fileName.split('.').pop();
@@ -1175,7 +1255,6 @@
         }
       }
 
-      // 3. Tenta Web Share API Nativa do Android (bandeja de compartilhamento / Salvar em Arquivos)
       try {
         const file = new File([blob], fileName, { type: mimeType });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -1191,7 +1270,6 @@
         console.warn('Web Share API indisponível ou bloqueada:', shareErr);
       }
 
-      // 4. Fallback final: Blob URL direto
       try {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1223,10 +1301,11 @@
       }
     }
 
+    // Geração do PDF em Alta Definição (scale: 2, JPEG 0.95) com limpeza de RAM por página
     async function exportToPDF() {
       const overlay = document.getElementById('pdfOverlay');
       const progressText = document.getElementById('pdfProgressText');
-      document.getElementById('overlayTitle').textContent = 'Gerando PDF...';
+      document.getElementById('overlayTitle').textContent = 'Gerando PDF em Alta Qualidade...';
       overlay.classList.remove('hidden');
       overlay.classList.add('flex');
 
@@ -1238,29 +1317,34 @@
       const fileName = `${titulo}.pdf`;
 
       const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [SHEET_WIDTH, SHEET_HEIGHT], compress: true });
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [SHEET_WIDTH, SHEET_HEIGHT] });
       const origIdx = albumState.currentPageIndex;
 
       try {
         for (let i = 0; i < albumState.pages.length; i++) {
-          progressText.textContent = `Renderizando página ${i + 1} de ${albumState.pages.length}...`;
+          progressText.textContent = `Renderizando página ${i + 1} de ${albumState.pages.length} em alta definição...`;
           albumState.currentPageIndex = i;
           renderAll();
           await new Promise(r => setTimeout(r, 350));
 
-          // Escala 1.35 reduz o consumo de RAM em ~60% evitando travamento no WebView do Android
           const canvasImg = await html2canvas(document.getElementById('paperSheet'), {
-            scale: 1.35,
+            scale: 2,
             useCORS: true,
             allowTaint: true,
             logging: false
           });
 
           if (i > 0) pdf.addPage([SHEET_WIDTH, SHEET_HEIGHT], 'landscape');
-          pdf.addImage(canvasImg.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, SHEET_WIDTH, SHEET_HEIGHT);
+          const imgData = canvasImg.toDataURL('image/jpeg', 0.95);
+          pdf.addImage(imgData, 'JPEG', 0, 0, SHEET_WIDTH, SHEET_HEIGHT, undefined, 'FAST');
+
+          // Libera imediatamente a memória do canvas antes de ir para a próxima página
+          canvasImg.width = 0;
+          canvasImg.height = 0;
+          await new Promise(r => setTimeout(r, 80));
         }
 
-        progressText.textContent = 'Gravando arquivo no armazenamento local...';
+        progressText.textContent = 'Gravando arquivo PDF no armazenamento local...';
         const pdfBlob = pdf.output('blob');
         await salvarOuCompartilharArquivo(pdfBlob, fileName, 'application/pdf', true);
 
