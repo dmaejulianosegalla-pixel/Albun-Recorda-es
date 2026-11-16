@@ -1024,29 +1024,25 @@
           pdf.addImage(canvasImg.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, SHEET_WIDTH, SHEET_HEIGHT);
         }
         
-        const pdfOutput = pdf.output('arraybuffer');
-        const blob = new Blob([pdfOutput], { type: 'application/pdf' });
         const fileName = `${albumState.title.replace(/\s+/g, '_')}.pdf`;
-        const file = new File([blob], fileName, { type: 'application/pdf' });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: albumState.title,
-            text: 'Aqui está o PDF do meu Scrapbook Digital!'
-          });
-        } else {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }, 500);
+        const pdfDataUri = pdf.output('datauristring');
+        
+        if (navigator.canShare) {
+          const blob = pdf.output('blob');
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: albumState.title, text: 'Meu Álbum em PDF' });
+            return;
+          }
         }
+        
+        const a = document.createElement('a');
+        a.href = pdfDataUri;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); }, 500);
+
       } catch(err) { 
         console.error('Erro ao gerar PDF:', err);
         showModal('Erro', 'Não foi possível gerar o PDF no celular.');
