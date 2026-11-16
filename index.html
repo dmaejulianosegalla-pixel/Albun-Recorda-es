@@ -291,6 +291,26 @@
     </div>
   </div>
 
+  <!-- Modal de Sucesso com Botão Explícito de Download (Garante funcionamento no Android) -->
+  <div id="downloadReadyModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-stone-100 text-center flex flex-col items-center">
+      <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3">
+        <i data-lucide="check-circle-2" class="w-7 h-7"></i>
+      </div>
+      <h3 class="font-bold text-stone-800 text-base mb-1">Arquivo Pronto!</h3>
+      <p id="readyFileName" class="text-xs text-stone-500 mb-5 break-all font-mono bg-stone-50 p-2 rounded-lg w-full"></p>
+      
+      <div class="flex flex-col gap-2 w-full">
+        <a id="explicitDownloadBtn" href="#" download="" class="w-full py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-md transition">
+          <i data-lucide="download" class="w-4 h-4"></i> Baixar Arquivo Agora
+        </a>
+        <button onclick="closeDownloadReadyModal()" class="w-full py-2.5 px-4 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold transition">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="customModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-stone-100">
       <div class="flex items-center gap-3 mb-3">
@@ -1125,7 +1145,7 @@
     }
 
     // =========================================================================
-    // SISTEMA DE ARMAZENAMENTO OPFS E DOWNLOAD HÍBRIDO (PC E ANDROID)
+    // SISTEMA DE ARMAZENAMENTO OPFS E DOWNLOAD COM BOTÃO EXPLÍCITO (ANDROID/PC)
     // =========================================================================
 
     async function getOpfsExportsDirectory() {
@@ -1236,27 +1256,25 @@
     }
 
     async function salvarOuCompartilharArquivo(blob, fileName, mimeType, salvarCopiaOPFS = true) {
-      // 1. Grava uma cópia física no armazenamento privado OPFS (offline)
       if (salvarCopiaOPFS) {
         await gravarNoOPFS(fileName, blob);
       }
 
-      // 2. FLUXO PARA PC (Windows/Mac/Linux): Download direto na pasta Downloads
+      const url = URL.createObjectURL(blob);
+
+      // Se for PC, dispara o download direto de forma silenciosa
       if (!isMobileDevice()) {
         try {
-          const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.style.display = 'none';
           a.href = url;
           a.download = fileName;
           document.body.appendChild(a);
           a.click();
-
           setTimeout(() => {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
           }, 2000);
-
           showModal('Download Concluído', `O arquivo "${fileName}" foi baixado para a sua pasta Downloads (e salvo no histórico interno do app).`);
           return;
         } catch (pcErr) {
@@ -1264,38 +1282,22 @@
         }
       }
 
-      // 3. FLUXO PARA CELULAR (Android): Bandeja nativa de compartilhamento/salvamento
-      try {
-        const file = new File([blob], fileName, { type: mimeType });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: fileName,
-            text: `Arquivo gerado pelo Álbum de Recordações: ${fileName}`
-          });
-          return;
-        }
-      } catch (shareErr) {
-        if (shareErr.name === 'AbortError') return;
-        console.warn('Web Share API indisponível:', shareErr);
-      }
+      // Se for Android, exibe um modal com o botão explícito "Baixar Arquivo Agora"
+      const modal = document.getElementById('downloadReadyModal');
+      const nameEl = document.getElementById('readyFileName');
+      const dlBtn = document.getElementById('explicitDownloadBtn');
 
-      // 4. Fallback universal
-      try {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 2000);
-      } catch (err) {
-        showModal('Salvo no App', `O arquivo "${fileName}" foi salvo internamente no armazenamento offline. Abra "Meus Trabalhos Salvos" no menu.`);
-      }
+      nameEl.textContent = fileName;
+      dlBtn.href = url;
+      dlBtn.download = fileName;
+      
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeDownloadReadyModal() {
+      document.getElementById('downloadReadyModal').classList.add('hidden');
     }
 
     async function exportProjectJSON() {
@@ -1349,7 +1351,6 @@
           const imgData = canvasImg.toDataURL('image/jpeg', 0.95);
           pdf.addImage(imgData, 'JPEG', 0, 0, SHEET_WIDTH, SHEET_HEIGHT, undefined, 'FAST');
 
-          // Libera imediatamente a memória do canvas antes de ir para a próxima página
           canvasImg.width = 0;
           canvasImg.height = 0;
           await new Promise(r => setTimeout(r, 80));
@@ -1358,17 +1359,21 @@
         progressText.textContent = 'Finalizando arquivo PDF...';
         const arrayBuffer = pdf.output('arraybuffer');
         const pdfBlob = new Blob([arrayBuffer], { type: 'application/pdf' });
+        
+        overlay.classList.remove('flex');
+        overlay.classList.add('hidden');
+
         await salvarOuCompartilharArquivo(pdfBlob, fileName, 'application/pdf', true);
 
       } catch (err) {
         console.error('Erro ao gerar PDF:', err);
+        overlay.classList.remove('flex');
+        overlay.classList.add('hidden');
         showModal('Erro', 'Não foi possível gerar o PDF.');
       } finally {
         albumState.currentPageIndex = origIdx;
         document.body.classList.remove('exporting-mode');
         renderAll();
-        overlay.classList.remove('flex');
-        overlay.classList.add('hidden');
       }
     }
 
