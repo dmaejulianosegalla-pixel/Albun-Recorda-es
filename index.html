@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Álbum de Recordações - Scrapbook Digital</title>
   <link rel="manifest" href="manifest.json" />
 
@@ -26,12 +26,10 @@
       margin: 0;
       padding: 0;
       width: 100%;
-      height: 100dvh;
+      height: 100vh;
       max-width: 100vw;
-      max-height: 100dvh;
+      max-height: 100vh;
       overflow: hidden;
-      overscroll-behavior: none;
-      touch-action: manipulation;
       font-family: 'Inter', sans-serif;
       user-select: none;
       -webkit-user-select: none;
@@ -41,13 +39,11 @@
     }
 
     header {
-      padding-top: env(safe-area-inset-top, 0px);
-      height: calc(3.5rem + env(safe-area-inset-top, 0px));
+      height: 3.5rem;
     }
 
     footer {
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-      height: calc(2.75rem + env(safe-area-inset-bottom, 0px));
+      height: 2.75rem;
     }
 
     /* Texturas de Papel */
@@ -81,11 +77,11 @@
     .filter-vivid { filter: saturate(1.35) contrast(1.08); }
     .filter-soft { filter: brightness(1.06) contrast(0.92) saturate(0.9); }
 
-    .album-item { position: absolute; touch-action: none; }
+    .album-item { position: absolute; }
     .album-item.selected { outline: 2.5px dashed #d97706; outline-offset: 4px; }
-    .handle-move { position: absolute; top: -40px; left: 0; background: #d97706; color: #ffffff; padding: 5px 11px; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: grab; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.25); z-index: 35; white-space: nowrap; touch-action: none; }
-    .handle-resize { position: absolute; right: -18px; bottom: -18px; width: 36px; height: 36px; background: #d97706; color: #ffffff; border: 3px solid #fff; border-radius: 50%; cursor: nwse-resize; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0,0,0,0.3); z-index: 35; touch-action: none; }
-    .handle-rotate { position: absolute; top: -40px; right: 0; width: 32px; height: 32px; background: #ffffff; color: #d97706; border: 2px solid #d97706; border-radius: 50%; cursor: grab; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25); z-index: 35; touch-action: none; }
+    .handle-move { position: absolute; top: -40px; left: 0; background: #d97706; color: #ffffff; padding: 5px 11px; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: grab; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.25); z-index: 35; white-space: nowrap; }
+    .handle-resize { position: absolute; right: -18px; bottom: -18px; width: 36px; height: 36px; background: #d97706; color: #ffffff; border: 3px solid #fff; border-radius: 50%; cursor: nwse-resize; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0,0,0,0.3); z-index: 35; }
+    .handle-rotate { position: absolute; top: -40px; right: 0; width: 32px; height: 32px; background: #ffffff; color: #d97706; border: 2px solid #d97706; border-radius: 50%; cursor: grab; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25); z-index: 35; }
 
     .snap-guide-v { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; border-left: 1.5px dashed #d97706; pointer-events: none; z-index: 40; }
     .snap-guide-h { position: absolute; left: 0; right: 0; top: 50%; height: 1px; border-top: 1.5px dashed #d97706; pointer-events: none; z-index: 40; }
@@ -101,21 +97,26 @@
 <body class="flex flex-col text-stone-800">
 
   <!-- Barra Superior (Header) -->
-  <header class="bg-white border-b border-stone-200 px-3 sm:px-5 flex items-center justify-between shrink-0 z-40 shadow-xs">
+  <header class="bg-white border-b border-stone-200 px-5 flex items-center justify-between shrink-0 z-40 shadow-xs">
     <div class="flex items-center gap-2 min-w-0">
       <div class="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-sm shrink-0">
         <i data-lucide="book-heart" class="w-4 h-4"></i>
       </div>
       <div class="min-w-0">
         <input id="albumTitleInput" type="text" value="Meu Álbum de Recordações"
-          class="font-bold text-stone-800 text-xs sm:text-base bg-transparent border-b border-transparent focus:border-amber-600 focus:outline-none px-1 rounded transition w-32 sm:w-56 truncate" />
+          class="font-bold text-stone-800 text-base bg-transparent border-b border-transparent focus:border-amber-600 focus:outline-none px-1 rounded transition w-56 truncate" />
         <p id="saveStatus" class="text-[10px] text-stone-400 px-1 truncate">Salvo</p>
       </div>
     </div>
 
-    <!-- Ações, Botão Salvar e Menu de Três Pontinhos -->
-    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-      <button onclick="salvarProgressoManual()" id="btnManualSave" title="Salvar Progresso" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition">
+    <!-- Ações, Botão Novo, Salvar e Menu de Três Pontinhos -->
+    <div class="flex items-center gap-2 shrink-0">
+      <button onclick="openNewProjectModal()" title="Novo Documento" class="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold flex items-center gap-1.5 transition">
+        <i data-lucide="file-plus" class="w-4 h-4 text-amber-600"></i>
+        <span>Novo</span>
+      </button>
+
+      <button onclick="salvarProgressoManual()" id="btnManualSave" title="Salvar Progresso" class="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition">
         <i data-lucide="save" class="w-4 h-4"></i>
         <span>Salvar</span>
       </button>
@@ -131,9 +132,6 @@
         </button>
 
         <div id="headerMenuDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-stone-200 py-2 z-50 flex flex-col">
-          <button onclick="shareCurrentPage(); closeMenuDropdown();" class="w-full text-left px-4 py-2.5 text-xs font-medium text-stone-700 hover:bg-amber-50 flex items-center gap-2.5 transition">
-            <i data-lucide="share-2" class="w-4 h-4 text-amber-600"></i> Compartilhar Página
-          </button>
           <button onclick="exportToPDF(); closeMenuDropdown();" class="w-full text-left px-4 py-2.5 text-xs font-medium text-stone-700 hover:bg-amber-50 flex items-center gap-2.5 transition">
             <i data-lucide="file-down" class="w-4 h-4 text-amber-600"></i> Criar PDF em Alta Qualidade
           </button>
@@ -147,10 +145,6 @@
             <i data-lucide="upload" class="w-4 h-4 text-amber-600"></i> Importar Backup (.json)
             <input type="file" accept=".json" onchange="importProjectJSON(event); closeMenuDropdown();" class="hidden" />
           </label>
-          <div class="border-t border-stone-100 my-1"></div>
-          <button onclick="openResetModal(); closeMenuDropdown();" class="w-full text-left px-4 py-2.5 text-xs font-medium text-red-600 hover:bg-red-50 flex items-center gap-2.5 transition">
-            <i data-lucide="file-plus" class="w-4 h-4"></i> Novo Álbum
-          </button>
         </div>
       </div>
     </div>
@@ -159,41 +153,41 @@
   <!-- Área Principal -->
   <div class="flex-1 flex overflow-hidden relative w-full">
     <!-- Barra Lateral Esquerda -->
-    <aside class="w-16 sm:w-20 bg-white border-r border-stone-200 flex flex-col items-center py-2 gap-1 shrink-0 z-30 overflow-y-auto">
-      <label class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 cursor-pointer transition">
+    <aside class="w-20 bg-white border-r border-stone-200 flex flex-col items-center py-2 gap-1 shrink-0 z-30 overflow-y-auto">
+      <label class="w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 cursor-pointer transition">
         <div class="w-8 h-8 rounded-lg bg-amber-100/80 text-amber-700 flex items-center justify-center"><i data-lucide="image-plus" class="w-4 h-4"></i></div>
         <span class="text-[9px] font-medium">Fotos</span>
         <input type="file" accept="image/*" multiple onchange="handlePhotoUpload(event)" class="hidden" />
       </label>
 
-      <button onclick="addTextItem()" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+      <button onclick="addTextItem()" class="w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
         <div class="w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center"><i data-lucide="type" class="w-4 h-4"></i></div>
         <span class="text-[9px] font-medium">Texto</span>
       </button>
 
-      <button onclick="addStickyNote()" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+      <button onclick="addStickyNote()" class="w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
         <div class="w-8 h-8 rounded-lg bg-yellow-100 text-yellow-700 flex items-center justify-center"><i data-lucide="sticky-note" class="w-4 h-4"></i></div>
         <span class="text-[9px] font-medium">Nota</span>
       </button>
 
-      <button id="drawModeBtn" onclick="toggleDrawMode()" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+      <button id="drawModeBtn" onclick="toggleDrawMode()" class="w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
         <div id="drawIconWrap" class="w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center"><i data-lucide="pen-tool" class="w-4 h-4"></i></div>
         <span class="text-[9px] font-medium">Desenhar</span>
       </button>
 
-      <button onclick="toggleDrawer('stickers')" id="btnDrawerStickers" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+      <button onclick="toggleDrawer('stickers')" id="btnDrawerStickers" class="w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
         <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i data-lucide="sparkles" class="w-4 h-4"></i></div>
         <span class="text-[9px] font-medium">Adesivos</span>
       </button>
 
-      <button onclick="toggleDrawer('paper')" id="btnDrawerPaper" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+      <button onclick="toggleDrawer('paper')" id="btnDrawerPaper" class="w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
         <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center"><i data-lucide="scroll-text" class="w-4 h-4"></i></div>
         <span class="text-[9px] font-medium">Papel</span>
       </button>
 
       <div class="w-10 border-t border-stone-200 my-1"></div>
 
-      <button onclick="openPageGridModal()" title="Visão Geral" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
+      <button onclick="openPageGridModal()" title="Visão Geral" class="w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition">
         <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center"><i data-lucide="layout-grid" class="w-4 h-4"></i></div>
         <span class="text-[9px] font-medium">Páginas</span>
       </button>
@@ -203,18 +197,18 @@
         <button onclick="nextPage()" id="nextPageBtn" class="p-1 rounded-lg hover:bg-stone-100 disabled:opacity-30 text-stone-700 transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
       </div>
 
-      <button onclick="addNewPage(false)" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition" title="Nova Página">
+      <button onclick="addNewPage(false)" class="w-16 py-1 rounded-xl hover:bg-amber-50 text-stone-700 flex flex-col items-center gap-0.5 transition" title="Nova Página">
         <div class="w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center"><i data-lucide="plus" class="w-4 h-4"></i></div>
         <span class="text-[9px] font-medium">Nova</span>
       </button>
 
-      <button onclick="deleteCurrentPage()" id="deletePageBtn" class="w-13 sm:w-16 py-1 rounded-xl hover:bg-red-50 text-stone-400 hover:text-red-600 flex flex-col items-center gap-0.5 transition" title="Excluir">
+      <button onclick="deleteCurrentPage()" id="deletePageBtn" class="w-16 py-1 rounded-xl hover:bg-red-50 text-stone-400 hover:text-red-600 flex flex-col items-center gap-0.5 transition" title="Excluir">
         <div class="w-8 h-8 rounded-lg bg-stone-50 text-stone-500 flex items-center justify-center"><i data-lucide="trash-2" class="w-4 h-4"></i></div>
         <span class="text-[9px] font-medium">Excluir</span>
       </button>
     </aside>
 
-    <div id="sideDrawer" class="hidden absolute sm:relative left-16 sm:left-0 top-0 bottom-0 w-60 bg-white border-r border-stone-200 p-3.5 flex-col gap-3 z-30 shadow-xl overflow-y-auto shrink-0">
+    <div id="sideDrawer" class="hidden absolute left-20 top-0 bottom-0 w-60 bg-white border-r border-stone-200 p-3.5 flex-col gap-3 z-30 shadow-xl overflow-y-auto shrink-0">
       <div class="flex items-center justify-between border-b border-stone-100 pb-2">
         <h3 id="drawerTitle" class="font-semibold text-sm text-stone-800">Opções</h3>
         <button onclick="closeDrawer()" class="p-1 rounded-lg hover:bg-stone-100 text-stone-500"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -222,26 +216,23 @@
       <div id="drawerContent" class="flex flex-col gap-3"></div>
     </div>
 
-    <!-- Área do Canvas com Pinch-to-Zoom Global (Dois Dedos) -->
+    <!-- Área do Canvas -->
     <main class="flex-1 flex flex-col overflow-hidden bg-stone-200/90 relative min-w-0">
       <div id="contextToolbar" class="h-11 bg-white/95 backdrop-blur border-b border-stone-200 px-3 flex items-center gap-2 overflow-x-auto shrink-0 z-10">
         <span class="text-xs text-stone-500 flex items-center gap-1.5 whitespace-nowrap">
           <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-amber-600"></i>
-          Toque em um item para mover ou redimensionar (ou use 2 dedos na página para zoom).
+          Toque em um item para mover ou redimensionar.
         </span>
       </div>
 
-      <div id="canvasViewport" class="flex-1 overflow-hidden flex items-center justify-center p-2 sm:p-6 relative touch-none" 
-           onmousedown="handleViewportClick(event)" 
-           ontouchstart="handleViewportTouchStart(event)" 
-           ontouchmove="handleViewportTouchMove(event)" 
-           ontouchend="handleViewportTouchEnd(event)">
+      <div id="canvasViewport" class="flex-1 overflow-hidden flex items-center justify-center p-6 relative" 
+           onmousedown="handleViewportClick(event)">
         <div id="paperWrapper" class="relative transition-transform duration-75 origin-center shrink-0">
-          <div id="paperSheet" class="w-[842px] h-[595px] relative overflow-hidden rounded-sm sheet-shadow paper-cream transition-colors duration-300">
+          <div id="paperSheet" class="relative overflow-hidden rounded-sm sheet-shadow paper-cream transition-colors duration-300">
             <div id="snapGuideV" class="snap-guide-v hidden"></div>
             <div id="snapGuideH" class="snap-guide-h hidden"></div>
             <div id="elementsLayer" class="absolute inset-0 z-10"></div>
-            <canvas id="drawingCanvas" width="842" height="595" class="absolute inset-0 z-20 pointer-events-none"></canvas>
+            <canvas id="drawingCanvas" class="absolute inset-0 z-20 pointer-events-none"></canvas>
             <div id="pageNumberBadge" class="absolute bottom-3 right-4 text-xs font-medium opacity-40 pointer-events-none z-30 font-serif">1</div>
           </div>
         </div>
@@ -261,8 +252,52 @@
   </div>
 
   <!-- Modais -->
+  <div id="newProjectModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-100 flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+            <i data-lucide="file-plus" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-stone-800 text-base">Criar Novo Álbum</h3>
+            <p class="text-xs text-stone-400">Escolha o formato inicial do projeto</p>
+          </div>
+        </div>
+        <button onclick="closeNewProjectModal()" class="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="flex flex-col gap-2.5">
+        <label class="text-xs font-semibold text-stone-600">Tamanho da Página</label>
+        <div class="grid grid-cols-2 gap-2.5">
+          <button onclick="selectProjectPreset(842, 595, event)" class="p-3 rounded-xl border-2 border-amber-600 bg-amber-50/50 hover:bg-amber-50 text-left flex flex-col gap-1 transition preset-card">
+            <span class="font-bold text-xs text-amber-900">A4 Paisagem (Horizontal)</span>
+            <span class="text-[10px] text-stone-500">842 × 595 px (Padrão)</span>
+          </button>
+          <button onclick="selectProjectPreset(595, 842, event)" class="p-3 rounded-xl border-2 border-stone-200 hover:border-amber-600 text-left flex flex-col gap-1 transition preset-card">
+            <span class="font-bold text-xs text-stone-800">A4 Retrato (Vertical)</span>
+            <span class="text-[10px] text-stone-500">595 × 842 px</span>
+          </button>
+          <button onclick="selectProjectPreset(650, 650, event)" class="p-3 rounded-xl border-2 border-stone-200 hover:border-amber-600 text-left flex flex-col gap-1 transition preset-card">
+            <span class="font-bold text-xs text-stone-800">Quadrado (Instagram)</span>
+            <span class="text-[10px] text-stone-500">650 × 650 px</span>
+          </button>
+          <button onclick="selectProjectPreset(600, 750, event)" class="p-3 rounded-xl border-2 border-stone-200 hover:border-amber-600 text-left flex flex-col gap-1 transition preset-card">
+            <span class="font-bold text-xs text-stone-800">Retrato Compacto</span>
+            <span class="text-[10px] text-stone-500">600 × 750 px</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-stone-100">
+        <button onclick="closeNewProjectModal()" class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold transition">Cancelar</button>
+        <button onclick="confirmNewProject()" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-md transition">Criar Novo Álbum</button>
+      </div>
+    </div>
+  </div>
+
   <div id="pageGridModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85dvh] flex flex-col shadow-2xl border border-stone-100 overflow-hidden">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-stone-100 overflow-hidden">
       <div class="p-4 border-b border-stone-100 flex items-center justify-between">
         <div class="flex items-center gap-2"><i data-lucide="layout-grid" class="w-5 h-5 text-amber-600"></i><h3 class="font-bold text-stone-800 text-base">Visão Geral do Álbum</h3></div>
         <button onclick="closePageGridModal()" class="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -276,7 +311,7 @@
   </div>
 
   <div id="filesModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full max-h-[85dvh] flex flex-col shadow-2xl border border-stone-100 overflow-hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl border border-stone-100 overflow-hidden">
       <div class="p-4 border-b border-stone-100 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i data-lucide="folder-archive" class="w-5 h-5 text-amber-600"></i>
@@ -287,26 +322,6 @@
       <div id="filesListContainer" class="p-4 overflow-y-auto flex flex-col gap-2.5 bg-stone-50 flex-1"></div>
       <div class="p-3 border-t border-stone-100 bg-white flex justify-end">
         <button onclick="closeFilesModal()" class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold transition">Fechar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal de Sucesso Otimizado para APK Android -->
-  <div id="downloadReadyModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-stone-100 text-center flex flex-col items-center">
-      <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3">
-        <i data-lucide="check-circle-2" class="w-7 h-7"></i>
-      </div>
-      <h3 class="font-bold text-stone-800 text-base mb-1">Arquivo Pronto!</h3>
-      <p id="readyFileName" class="text-xs text-stone-500 mb-5 break-all font-mono bg-stone-50 p-2 rounded-lg w-full"></p>
-      
-      <div class="flex flex-col gap-2 w-full">
-        <button onclick="executarAberturaNoNavegadorMobile()" id="explicitDownloadBtn" class="w-full py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-md transition">
-          <i data-lucide="external-link" class="w-4 h-4"></i> Abrir e Salvar no Celular
-        </button>
-        <button onclick="closeDownloadReadyModal()" class="w-full py-2.5 px-4 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold transition">
-          Fechar
-        </button>
       </div>
     </div>
   </div>
@@ -329,60 +344,19 @@
   </div>
 
   <script>
-    const SHEET_WIDTH = 842;
-    const SHEET_HEIGHT = 595;
+    let SHEET_WIDTH = 842;
+    let SHEET_HEIGHT = 595;
+    let selectedPresetWidth = 842;
+    let selectedPresetHeight = 595;
+
     const STORAGE_KEY = 'album_recordacoes_v1';
     const OPFS_FOLDER_NAME = 'scrapbook_exports';
     const OPFS_PROJECT_FILE = 'album_progresso_atual.json';
 
-    let albumState = { title: 'Meu Álbum de Recordações', currentPageIndex: 0, pages: [] };
+    let albumState = { title: 'Meu Álbum de Recordações', currentPageIndex: 0, sheetWidth: 842, sheetHeight: 595, pages: [] };
     let undoStack = [], redoStack = [];
     const MAX_HISTORY = 25;
     let selectedItemId = null, currentZoom = 1, isDrawMode = false, brushColor = '#1c1917', brushSize = 4, isEraser = false;
-
-    let globalExportBlob = null;
-    let globalExportFileName = '';
-
-    function isMobileDevice() {
-      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-             (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
-    }
-
-    // Controle de Pinch-to-Zoom Global (Dois Dedos)
-    let globalPinchInitialDist = null;
-    let globalPinchInitialZoom = 1;
-
-    function handleViewportTouchStart(e) {
-      if (e.touches.length === 2 && !selectedItemId) {
-        e.preventDefault();
-        globalPinchInitialDist = Math.hypot(
-          e.touches[1].clientX - e.touches[0].clientX,
-          e.touches[1].clientY - e.touches[0].clientY
-        );
-        globalPinchInitialZoom = currentZoom;
-      } else if (e.target.id === 'canvasViewport' || e.target.id === 'paperSheet' || e.target.id === 'elementsLayer') {
-        if (selectedItemId) { selectedItemId = null; renderAll(); }
-      }
-    }
-
-    function handleViewportTouchMove(e) {
-      if (e.touches.length === 2 && globalPinchInitialDist !== null && !selectedItemId) {
-        e.preventDefault();
-        const currentDist = Math.hypot(
-          e.touches[1].clientX - e.touches[0].clientX,
-          e.touches[1].clientY - e.touches[0].clientY
-        );
-        const factor = currentDist / globalPinchInitialDist;
-        currentZoom = Math.max(0.25, Math.min(2.5, parseFloat((globalPinchInitialZoom * factor).toFixed(2))));
-        applyZoom();
-      }
-    }
-
-    function handleViewportTouchEnd(e) {
-      if (e.touches.length < 2) {
-        globalPinchInitialDist = null;
-      }
-    }
 
     function pushHistory() {
       undoStack.push(JSON.stringify(albumState));
@@ -419,12 +393,16 @@
 
     window.addEventListener('DOMContentLoaded', async () => {
       await loadFromLocalStorage();
-      if (albumState.pages.length === 0) initDefaultAlbum();
+      if (albumState.pages.length === 0) {
+        initCustomAlbum(842, 595);
+      } else {
+        SHEET_WIDTH = albumState.sheetWidth || 842;
+        SHEET_HEIGHT = albumState.sheetHeight || 595;
+      }
       renderAll();
       setTimeout(fitSheetToScreen, 100);
       setupDrawingCanvas();
       
-      // Garante a renderização dos ícones do Lucide no WebView offline
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
       }
@@ -442,29 +420,74 @@
       window.addEventListener('orientationchange', () => setTimeout(fitSheetToScreen, 200));
     });
 
-    function initDefaultAlbum() {
+    function initCustomAlbum(w, h) {
       const today = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
       albumState = {
         title: 'Meu Álbum de Recordações',
         currentPageIndex: 0,
+        sheetWidth: w,
+        sheetHeight: h,
         pages: [
           {
             id: generateId(), paper: 'paper-cover', isCover: true, drawingData: null,
             items: [
-              { id: generateId(), type: 'text', x: 171, y: 190, width: 500, rotation: 0, content: 'Nossas Melhores Memórias', fontFamily: "'Dancing Script', cursive", fontSize: 54, color: '#fef3c7', bgColor: 'transparent', align: 'center' },
-              { id: generateId(), type: 'text', x: 246, y: 285, width: 350, rotation: 0, content: `Edição Especial • ${today}`, fontFamily: "'Lora', serif", fontSize: 18, color: '#d6d3d1', bgColor: 'transparent', align: 'center' },
-              { id: generateId(), type: 'sticker', x: 390, y: 350, width: 64, rotation: 0, emoji: '✨' }
+              { id: generateId(), type: 'text', x: Math.round(w/2 - 250), y: Math.round(h/2 - 100), width: 500, rotation: 0, content: 'Nossas Melhores Memórias', fontFamily: "'Dancing Script', cursive", fontSize: 52, color: '#fef3c7', bgColor: 'transparent', align: 'center' },
+              { id: generateId(), type: 'text', x: Math.round(w/2 - 175), y: Math.round(h/2 - 15), width: 350, rotation: 0, content: `Edição Especial • ${today}`, fontFamily: "'Lora', serif", fontSize: 18, color: '#d6d3d1', bgColor: 'transparent', align: 'center' },
+              { id: generateId(), type: 'sticker', x: Math.round(w/2 - 32), y: Math.round(h/2 + 50), width: 64, rotation: 0, emoji: '✨' }
             ]
           },
           {
             id: generateId(), paper: 'paper-cream', isCover: false, drawingData: null,
             items: [
-              { id: generateId(), type: 'text', x: 60, y: 45, width: 420, rotation: -1, content: 'Capítulo 1: Um dia inesquecível...', fontFamily: "'Caveat', cursive", fontSize: 34, color: '#44403c', bgColor: 'transparent', align: 'left' },
-              { id: generateId(), type: 'sticky', x: 540, y: 70, width: 220, rotation: 3, content: 'Toque em "Fotos" para colar suas imagens aqui!', fontFamily: "'Patrick Hand', cursive", fontSize: 20, color: '#422006', bgColor: '#fef08a', align: 'left' }
+              { id: generateId(), type: 'text', x: 60, y: 45, width: Math.min(420, w - 100), rotation: -1, content: 'Capítulo 1: Um dia inesquecível...', fontFamily: "'Caveat', cursive", fontSize: 34, color: '#44403c', bgColor: 'transparent', align: 'left' }
             ]
           }
         ]
       };
+    }
+
+    function openNewProjectModal() {
+      document.getElementById('newProjectModal').classList.remove('hidden');
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+    }
+
+    function closeNewProjectModal() {
+      document.getElementById('newProjectModal').classList.add('hidden');
+    }
+
+    function selectProjectPreset(w, h, event) {
+      selectedPresetWidth = w;
+      selectedPresetHeight = h;
+      document.querySelectorAll('.preset-card').forEach(btn => {
+        btn.className = "p-3 rounded-xl border-2 border-stone-200 hover:border-amber-600 text-left flex flex-col gap-1 transition preset-card";
+        const titleEl = btn.querySelector('span');
+        if (titleEl) titleEl.className = "font-bold text-xs text-stone-800";
+      });
+      event.currentTarget.className = "p-3 rounded-xl border-2 border-amber-600 bg-amber-50/50 hover:bg-amber-50 text-left flex flex-col gap-1 transition preset-card";
+      const activeTitle = event.currentTarget.querySelector('span');
+      if (activeTitle) activeTitle.className = "font-bold text-xs text-amber-900";
+    }
+
+    function confirmNewProject() {
+      showConfirmModal('Novo Álbum', 'Deseja realmente apagar o álbum atual e criar um novo com o tamanho selecionado?', async () => {
+        pushHistory();
+        localStorage.removeItem(STORAGE_KEY);
+        try {
+          const root = await navigator.storage.getDirectory();
+          await root.removeEntry(OPFS_PROJECT_FILE);
+        } catch (e) {}
+
+        SHEET_WIDTH = selectedPresetWidth;
+        SHEET_HEIGHT = selectedPresetHeight;
+
+        initCustomAlbum(SHEET_WIDTH, SHEET_HEIGHT);
+        document.getElementById('albumTitleInput').value = albumState.title;
+        selectedItemId = null;
+        renderAll();
+        fitSheetToScreen();
+        saveToLocalStorage();
+        closeNewProjectModal();
+      });
     }
 
     function generateId() { return 'id_' + Math.random().toString(36).substr(2, 9); }
@@ -473,8 +496,23 @@
     function renderAll() {
       const page = getCurrentPage();
       if (!page) return;
+
+      const currentW = albumState.sheetWidth || 842;
+      const currentH = albumState.sheetHeight || 595;
+      SHEET_WIDTH = currentW;
+      SHEET_HEIGHT = currentH;
+
       const sheet = document.getElementById('paperSheet');
-      sheet.className = `w-[842px] h-[595px] relative overflow-hidden rounded-sm sheet-shadow transition-colors duration-300 ${page.paper}`;
+      sheet.className = `relative overflow-hidden rounded-sm sheet-shadow transition-colors duration-300 ${page.paper}`;
+      sheet.style.width = `${currentW}px`;
+      sheet.style.height = `${currentH}px`;
+
+      const canvas = document.getElementById('drawingCanvas');
+      if (canvas.width !== currentW || canvas.height !== currentH) {
+        canvas.width = currentW;
+        canvas.height = currentH;
+      }
+
       document.getElementById('pageNumberBadge').style.color = page.paper === 'paper-cover' ? '#ffffff' : '#44403c';
       document.getElementById('pageNumberBadge').textContent = page.isCover ? 'Capa' : `Página ${albumState.currentPageIndex}`;
       document.getElementById('pageIndicatorLabel').textContent = page.isCover ? 'Capa do Álbum' : `Página ${albumState.currentPageIndex} de ${albumState.pages.length - 1}`;
@@ -507,13 +545,6 @@
         selectItem(item.id);
       });
 
-      wrapper.addEventListener('touchstart', (e) => {
-        if (isDrawMode) return;
-        if (e.target.closest('.handle-resize') || e.target.closest('.handle-rotate') || e.target.closest('.handle-move')) return;
-        if (e.touches.length === 2) { selectItem(item.id); startPinchResize(e, item, wrapper); return; }
-        selectItem(item.id);
-      }, { passive: false });
-
       if (item.type === 'photo') {
         const frameDiv = document.createElement('div');
         frameDiv.className = `w-full transition-all ${item.frame || 'frame-polaroid'}`;
@@ -532,7 +563,6 @@
           caption.addEventListener('focus', () => pushHistory());
           caption.addEventListener('input', (e) => { item.caption = e.target.innerText; saveToLocalStorage(); });
           caption.addEventListener('mousedown', (e) => e.stopPropagation());
-          caption.addEventListener('touchstart', (e) => e.stopPropagation());
           frameDiv.appendChild(caption);
         }
         wrapper.appendChild(frameDiv);
@@ -580,21 +610,18 @@
         moveHandle.className = 'handle-move';
         moveHandle.innerHTML = `<i data-lucide="move" class="w-4 h-4"></i> Mover`;
         moveHandle.addEventListener('mousedown', (e) => startDrag(e, item, wrapper));
-        moveHandle.addEventListener('touchstart', (e) => startDrag(e.touches[0], item, wrapper, true), { passive: false });
         wrapper.appendChild(moveHandle);
 
         const rotateHandle = document.createElement('div');
         rotateHandle.className = 'handle-rotate';
         rotateHandle.innerHTML = `<i data-lucide="rotate-cw" class="w-4 h-4"></i>`;
         rotateHandle.addEventListener('mousedown', (e) => startRotate(e, item, wrapper));
-        rotateHandle.addEventListener('touchstart', (e) => startRotate(e.touches[0], item, wrapper, true), { passive: false });
         wrapper.appendChild(rotateHandle);
 
         const resizeHandle = document.createElement('div');
         resizeHandle.className = 'handle-resize';
         resizeHandle.innerHTML = `<i data-lucide="maximize-2" class="w-4 h-4"></i>`;
         resizeHandle.addEventListener('mousedown', (e) => startResize(e, item, wrapper));
-        resizeHandle.addEventListener('touchstart', (e) => startResize(e.touches[0], item, wrapper, true), { passive: false });
         wrapper.appendChild(resizeHandle);
       }
 
@@ -613,60 +640,35 @@
       }
     }
 
-    function startPinchResize(startEvent, item, wrapper) {
+    function startDrag(startEvent, item, wrapper) {
       startEvent.stopPropagation(); startEvent.preventDefault(); pushHistory();
-      const t1 = startEvent.touches[0], t2 = startEvent.touches[1];
-      const initialDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-      const origWidth = item.width;
-      function onPinchMove(ev) {
-        if (ev.touches.length < 2) return;
-        ev.preventDefault();
-        const nt1 = ev.touches[0], nt2 = ev.touches[1];
-        const currentDist = Math.hypot(nt2.clientX - nt1.clientX, nt2.clientY - nt1.clientY);
-        const newWidth = Math.max(50, Math.min(780, Math.round(origWidth * (currentDist / initialDist))));
-        item.width = newWidth; wrapper.style.width = `${newWidth}px`;
-        if (item.type === 'sticker') wrapper.firstChild.style.fontSize = `${newWidth * 0.82}px`;
-      }
-      function onPinchEnd() { window.removeEventListener('touchmove', onPinchMove); window.removeEventListener('touchend', onPinchEnd); saveToLocalStorage(); }
-      window.addEventListener('touchmove', onPinchMove, { passive: false });
-      window.addEventListener('touchend', onPinchEnd);
-    }
-
-    function startDrag(startEvent, item, wrapper, isTouch = false) {
-      if (startEvent.stopPropagation) startEvent.stopPropagation();
-      if (!isTouch && startEvent.preventDefault) startEvent.preventDefault();
-      pushHistory();
       const startX = startEvent.clientX, startY = startEvent.clientY, origX = item.x, origY = item.y;
       const guideV = document.getElementById('snapGuideV'), guideH = document.getElementById('snapGuideH');
       const elHeight = wrapper.offsetHeight || 100;
       function onMove(ev) {
-        const pt = isTouch ? ev.touches[0] : ev;
-        let nextX = Math.round(origX + (pt.clientX - startX) / currentZoom);
-        let nextY = Math.round(origY + (pt.clientY - startY) / currentZoom);
+        let nextX = Math.round(origX + (ev.clientX - startX) / currentZoom);
+        let nextY = Math.round(origY + (ev.clientY - startY) / currentZoom);
         if (Math.abs((nextX + item.width / 2) - SHEET_WIDTH / 2) < 10) { nextX = Math.round(SHEET_WIDTH / 2 - item.width / 2); guideV.classList.remove('hidden'); } else guideV.classList.add('hidden');
         if (Math.abs((nextY + elHeight / 2) - SHEET_HEIGHT / 2) < 10) { nextY = Math.round(SHEET_HEIGHT / 2 - elHeight / 2); guideH.classList.remove('hidden'); } else guideH.classList.add('hidden');
         item.x = nextX; item.y = nextY; wrapper.style.left = `${item.x}px`; wrapper.style.top = `${item.y}px`;
       }
-      function onEnd() { window.removeEventListener(isTouch ? 'touchmove' : 'mousemove', onMove); window.removeEventListener(isTouch ? 'touchend' : 'mouseup', onEnd); guideV.classList.add('hidden'); guideH.classList.add('hidden'); saveToLocalStorage(); }
-      window.addEventListener(isTouch ? 'touchmove' : 'mousemove', onMove, { passive: false });
-      window.addEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
+      function onEnd() { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onEnd); guideV.classList.add('hidden'); guideH.classList.add('hidden'); saveToLocalStorage(); }
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onEnd);
     }
 
-    function startResize(startEvent, item, wrapper, isTouch = false) {
-      if (startEvent.stopPropagation) startEvent.stopPropagation();
-      if (!isTouch && startEvent.preventDefault) startEvent.preventDefault();
-      pushHistory();
+    function startResize(startEvent, item, wrapper) {
+      startEvent.stopPropagation(); startEvent.preventDefault(); pushHistory();
       const startX = startEvent.clientX, startY = startEvent.clientY, origWidth = item.width;
       function onMove(ev) {
-        const pt = isTouch ? ev.touches[0] : ev;
-        const dx = (pt.clientX - startX) / currentZoom, dy = (pt.clientY - startY) / currentZoom;
+        const dx = (ev.clientX - startX) / currentZoom, dy = (ev.clientY - startY) / currentZoom;
         const newWidth = Math.max(50, Math.min(780, Math.round(origWidth + (Math.abs(dx) > Math.abs(dy) ? dx : dy))));
         item.width = newWidth; wrapper.style.width = `${newWidth}px`;
         if (item.type === 'sticker') wrapper.firstChild.style.fontSize = `${newWidth * 0.82}px`;
       }
-      function onEnd() { window.removeEventListener(isTouch ? 'touchmove' : 'mousemove', onMove); window.removeEventListener(isTouch ? 'touchend' : 'mouseup', onEnd); saveToLocalStorage(); }
-      window.addEventListener(isTouch ? 'touchmove' : 'mousemove', onMove, { passive: false });
-      window.addEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
+      function onEnd() { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onEnd); saveToLocalStorage(); }
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onEnd);
     }
 
     function adjustItemWidth(delta) {
@@ -675,21 +677,18 @@
       pushHistory(); item.width = Math.max(50, Math.min(780, item.width + delta)); renderAll(); saveToLocalStorage();
     }
 
-    function startRotate(startEvent, item, wrapper, isTouch = false) {
-      if (startEvent.stopPropagation) startEvent.stopPropagation();
-      if (!isTouch && startEvent.preventDefault) startEvent.preventDefault();
-      pushHistory();
+    function startRotate(startEvent, item, wrapper) {
+      startEvent.stopPropagation(); startEvent.preventDefault(); pushHistory();
       const rect = wrapper.getBoundingClientRect(), centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2;
       function onMove(ev) {
-        const pt = isTouch ? ev.touches[0] : ev;
-        let degrees = Math.round(Math.atan2(pt.clientY - centerY, pt.clientX - centerX) * (180 / Math.PI) + 90);
+        let degrees = Math.round(Math.atan2(ev.clientY - centerY, ev.clientX - centerX) * (180 / Math.PI) + 90);
         if (degrees < 0) degrees += 360;
         if (degrees > 355 || degrees < 5) degrees = 0;
         item.rotation = degrees; wrapper.style.transform = `rotate(${degrees}deg)`;
       }
-      function onEnd() { window.removeEventListener(isTouch ? 'touchmove' : 'mousemove', onMove); window.removeEventListener(isTouch ? 'touchend' : 'mouseup', onEnd); saveToLocalStorage(); }
-      window.addEventListener(isTouch ? 'touchmove' : 'mousemove', onMove, { passive: false });
-      window.addEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
+      function onEnd() { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onEnd); saveToLocalStorage(); }
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onEnd);
     }
 
     let isDrawing = false, drawingCtx = null;
@@ -700,9 +699,6 @@
       canvas.addEventListener('mousemove', draw);
       canvas.addEventListener('mouseup', stopDrawing);
       canvas.addEventListener('mouseleave', stopDrawing);
-      canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e.touches[0]); }, { passive: false });
-      canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0]); }, { passive: false });
-      canvas.addEventListener('touchend', stopDrawing);
     }
 
     function startDrawing(e) {
@@ -803,7 +799,6 @@
 
     function closeDrawer() { document.getElementById('sideDrawer').classList.add('hidden'); document.getElementById('sideDrawer').classList.remove('flex'); }
 
-    // Preserva alta nitidez nas fotos (até 1800px e 92% de qualidade) sem estourar a RAM
     function compressImageFile(file, maxDim = 1800, quality = 0.92) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -909,7 +904,7 @@
       const toolbar = document.getElementById('contextToolbar');
       if (!selectedItemId) {
         toolbar.innerHTML = !isDrawMode
-          ? `<span class="text-xs text-stone-500 flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-amber-600"></i>Toque em um item para mover ou redimensionar (ou use 2 dedos na página para zoom).</span>`
+          ? `<span class="text-xs text-stone-500 flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-amber-600"></i>Toque em um item para mover ou redimensionar.</span>`
           : `<span class="text-xs font-medium text-amber-700 flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="pen-tool" class="w-3.5 h-3.5"></i>Modo Desenho Livre Ativo.</span>`;
         if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         return;
@@ -1039,7 +1034,7 @@
     function adjustZoom(delta) { currentZoom = Math.max(0.25, Math.min(2.5, parseFloat((currentZoom + delta).toFixed(2)))); applyZoom(); }
     function fitSheetToScreen() {
       const viewport = document.getElementById('canvasViewport'); if (!viewport) return;
-      currentZoom = parseFloat(Math.min((viewport.clientWidth - 16) / SHEET_WIDTH, (viewport.clientHeight - 16) / SHEET_HEIGHT, 1.2).toFixed(2));
+      currentZoom = parseFloat(Math.min((viewport.clientWidth - 40) / SHEET_WIDTH, (viewport.clientHeight - 40) / SHEET_HEIGHT, 1.2).toFixed(2));
       applyZoom();
     }
     function applyZoom() {
@@ -1047,30 +1042,16 @@
       document.getElementById('zoomLabel').textContent = `${Math.round(currentZoom * 100)}%`;
     }
 
-    async function shareCurrentPage() {
-      const overlay = document.getElementById('pdfOverlay');
-      document.getElementById('overlayTitle').textContent = 'Preparando Imagem em Alta Qualidade...';
-      overlay.classList.remove('hidden'); overlay.classList.add('flex');
-      selectedItemId = null; renderAll(); document.body.classList.add('exporting-mode');
-      try {
-        await new Promise(r => setTimeout(r, 250));
-        const canvasImg = await html2canvas(document.getElementById('paperSheet'), { scale: 2, useCORS: true, allowTaint: true, logging: false });
-        canvasImg.toBlob(async (blob) => {
-          const fileName = `${albumState.title.replace(/\s+/g, '_')}_p${albumState.currentPageIndex + 1}.png`;
-          await salvarOuCompartilharArquivo(blob, fileName, 'image/png');
-        }, 'image/png');
-      } catch (err) { console.error(err); }
-      finally { document.body.classList.remove('exporting-mode'); renderAll(); overlay.classList.remove('flex'); overlay.classList.add('hidden'); }
-    }
-
     // =========================================================================
-    // SALVAMENTO DO PROGRESSO DO PROJETO (BOTÃO SALVAR + AUTO-SAVE NO OPFS)
+    // SALVAMENTO E OPFS
     // =========================================================================
 
     async function saveToLocalStorage() {
       const statusEl = document.getElementById('saveStatus');
       if (statusEl) statusEl.textContent = 'Salvando...';
 
+      albumState.sheetWidth = SHEET_WIDTH;
+      albumState.sheetHeight = SHEET_HEIGHT;
       const jsonStr = JSON.stringify(albumState);
 
       try {
@@ -1079,9 +1060,7 @@
         const writable = await fileHandle.createWritable();
         await writable.write(jsonStr);
         await writable.close();
-      } catch (e) {
-        console.warn('Falha ao gravar progresso no OPFS:', e);
-      }
+      } catch (e) {}
 
       try {
         localStorage.setItem(STORAGE_KEY, jsonStr);
@@ -1135,31 +1114,23 @@
       reader.onload = (ev) => {
         try {
           const imp = JSON.parse(ev.target.result);
-          if (imp.pages) { pushHistory(); albumState = imp; document.getElementById('albumTitleInput').value = albumState.title; albumState.currentPageIndex = 0; selectedItemId = null; renderAll(); saveToLocalStorage(); showModal('Sucesso', 'Backup importado com sucesso!'); }
+          if (imp.pages) {
+            pushHistory();
+            albumState = imp;
+            SHEET_WIDTH = albumState.sheetWidth || 842;
+            SHEET_HEIGHT = albumState.sheetHeight || 595;
+            document.getElementById('albumTitleInput').value = albumState.title;
+            albumState.currentPageIndex = 0;
+            selectedItemId = null;
+            renderAll();
+            fitSheetToScreen();
+            saveToLocalStorage();
+            showModal('Sucesso', 'Backup importado com sucesso!');
+          }
         } catch(err) { showModal('Erro', 'Arquivo de backup inválido.'); }
       };
       reader.readAsText(file); e.target.value = '';
     }
-
-    function openResetModal() {
-      showConfirmModal('Novo Álbum', 'Deseja apagar tudo e criar um novo álbum?', async () => {
-        pushHistory();
-        localStorage.removeItem(STORAGE_KEY);
-        try {
-          const root = await navigator.storage.getDirectory();
-          await root.removeEntry(OPFS_PROJECT_FILE);
-        } catch (e) {}
-        initDefaultAlbum();
-        document.getElementById('albumTitleInput').value = albumState.title;
-        selectedItemId = null;
-        renderAll();
-        saveToLocalStorage();
-      });
-    }
-
-    // =========================================================================
-    // SISTEMA DE ARMAZENAMENTO OPFS E EXPORTAÇÃO MOBILE (APK)
-    // =========================================================================
 
     async function getOpfsExportsDirectory() {
       if (!navigator.storage || !navigator.storage.getDirectory) return null;
@@ -1176,10 +1147,7 @@
         await writable.write(blob);
         await writable.close();
         return true;
-      } catch (err) {
-        console.error('Erro ao gravar arquivo no OPFS:', err);
-        return false;
-      }
+      } catch (err) { return false; }
     }
 
     async function openFilesModal() {
@@ -1189,10 +1157,7 @@
 
       try {
         const dir = await getOpfsExportsDirectory();
-        if (!dir) {
-          container.innerHTML = `<div class="text-center py-8 text-stone-400 text-xs">Armazenamento OPFS não suportado neste navegador.</div>`;
-          return;
-        }
+        if (!dir) { container.innerHTML = `<div class="text-center py-8 text-stone-400 text-xs">Não suportado.</div>`; return; }
 
         const entries = [];
         for await (const [name, handle] of dir.entries()) {
@@ -1208,7 +1173,7 @@
 
         container.innerHTML = '';
         if (entries.length === 0) {
-          container.innerHTML = `<div class="text-center py-8 text-stone-400 text-xs">Nenhum arquivo gerado ainda. Crie um PDF ou backup JSON para salvá-lo aqui offline.</div>`;
+          container.innerHTML = `<div class="text-center py-8 text-stone-400 text-xs">Nenhum arquivo gerado ainda.</div>`;
         } else {
           entries.forEach(file => {
             const itemDiv = document.createElement('div');
@@ -1220,7 +1185,7 @@
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
                 <button onclick="baixarArquivoDoOPFS('${file.name}')" class="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold transition flex items-center gap-1">
-                  <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Abrir / Baixar
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i> Baixar
                 </button>
                 <button onclick="excluirArquivoDoOPFS('${file.name}')" class="p-1.5 rounded-lg hover:bg-red-50 text-stone-400 hover:text-red-600 transition">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -1232,25 +1197,17 @@
         }
         if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
       } catch (err) {
-        console.error('Erro ao listar OPFS:', err);
-        container.innerHTML = `<div class="text-center py-8 text-red-400 text-xs">Erro ao acessar arquivos internos.</div>`;
+        container.innerHTML = `<div class="text-center py-8 text-red-400 text-xs">Erro ao acessar arquivos.</div>`;
       }
     }
 
-    function closeFilesModal() {
-      document.getElementById('filesModal').classList.add('hidden');
-    }
+    function closeFilesModal() { document.getElementById('filesModal').classList.add('hidden'); }
 
     async function excluirArquivoDoOPFS(fileName) {
       try {
         const dir = await getOpfsExportsDirectory();
-        if (dir) {
-          await dir.removeEntry(fileName);
-          openFilesModal();
-        }
-      } catch (err) {
-        console.error('Erro ao remover arquivo do OPFS:', err);
-      }
+        if (dir) { await dir.removeEntry(fileName); openFilesModal(); }
+      } catch (err) {}
     }
 
     async function baixarArquivoDoOPFS(fileName) {
@@ -1259,69 +1216,15 @@
         if (!dir) return;
         const fileHandle = await dir.getFileHandle(fileName);
         const file = await fileHandle.getFile();
-        const mimeType = fileName.endsWith('.pdf') ? 'application/pdf' : (fileName.endsWith('.json') ? 'application/json' : 'image/png');
-
-        await salvarOuCompartilharArquivo(file, fileName, mimeType, false);
-      } catch (err) {
-        console.error('Erro ao ler arquivo do OPFS:', err);
-        showModal('Erro', 'Não foi possível abrir o arquivo.');
-      }
-    }
-
-    async function salvarOuCompartilharArquivo(blob, fileName, mimeType, salvarCopiaOPFS = true) {
-      if (salvarCopiaOPFS) {
-        await gravarNoOPFS(fileName, blob);
-      }
-
-      globalExportBlob = blob;
-      globalExportFileName = fileName;
-
-      const url = URL.createObjectURL(blob);
-
-      // Se for PC, dispara o download direto
-      if (!isMobileDevice()) {
-        try {
-          const a = document.createElement('a');
-          a.style.display = 'none';
-          a.href = url;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }, 2000);
-          showModal('Download Concluído', `O arquivo "${fileName}" foi baixado para a sua pasta Downloads.`);
-          return;
-        } catch (pcErr) {
-          console.error('Erro ao baixar no PC:', pcErr);
-        }
-      }
-
-      // No APK / Android: Exibe o modal com o botão que abre a aba externa do navegador do celular
-      document.getElementById('readyFileName').textContent = fileName;
-      const modal = document.getElementById('downloadReadyModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
-    }
-
-    function executarAberturaNoNavegadorMobile() {
-      if (!globalExportBlob) return;
-      try {
-        const url = URL.createObjectURL(globalExportBlob);
-        const opened = window.open(url, '_blank');
-        if (!opened) {
-          showModal('Aviso', 'Abra a aba "Meus Trabalhos Salvos" no menu para gerenciar seu arquivo.');
-        }
-      } catch (e) {
-        showModal('Salvo no App', 'O arquivo está guardado na seção "Meus Trabalhos Salvos" do menu.');
-      }
-      closeDownloadReadyModal();
-    }
-
-    function closeDownloadReadyModal() {
-      document.getElementById('downloadReadyModal').classList.add('hidden');
+        const url = URL.createObjectURL(file);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 2000);
+      } catch (err) { showModal('Erro', 'Não foi possível baixar o arquivo.'); }
     }
 
     async function exportProjectJSON() {
@@ -1330,15 +1233,20 @@
         const fileName = `${titulo}_backup.json`;
         const jsonStr = JSON.stringify(albumState, null, 2);
         const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+        await gravarNoOPFS(fileName, blob);
 
-        await salvarOuCompartilharArquivo(blob, fileName, 'application/json', true);
-      } catch (err) {
-        console.error('Erro ao exportar JSON:', err);
-        showModal('Erro', 'Não foi possível exportar o backup.');
-      }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 2000);
+      } catch (err) { showModal('Erro', 'Não foi possível exportar o backup.'); }
     }
 
-    // Geração do PDF em Alta Definição (scale: 2, JPEG 0.95) com limpeza de RAM por página
+    // Geração corrigida do PDF no PC (escala resetada para 1 e delay para fontes renderizarem)
     async function exportToPDF() {
       const overlay = document.getElementById('pdfOverlay');
       const progressText = document.getElementById('pdfProgressText');
@@ -1350,44 +1258,57 @@
       renderAll();
       document.body.classList.add('exporting-mode');
 
+      const paperWrapper = document.getElementById('paperWrapper');
+      const originalTransform = paperWrapper.style.transform;
+      paperWrapper.style.transform = 'scale(1)';
+
       const titulo = (albumState.title || 'Meu_Album').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_');
       const fileName = `${titulo}.pdf`;
 
       const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [SHEET_WIDTH, SHEET_HEIGHT] });
+      const pdf = new jsPDF({ orientation: SHEET_WIDTH >= SHEET_HEIGHT ? 'landscape' : 'portrait', unit: 'px', format: [SHEET_WIDTH, SHEET_HEIGHT] });
       const origIdx = albumState.currentPageIndex;
 
       try {
         for (let i = 0; i < albumState.pages.length; i++) {
-          progressText.textContent = `Renderizando página ${i + 1} de ${albumState.pages.length} em alta definição...`;
+          progressText.textContent = `Renderizando página ${i + 1} de ${albumState.pages.length}...`;
           albumState.currentPageIndex = i;
           renderAll();
-          await new Promise(r => setTimeout(r, 350));
+          
+          await new Promise(r => setTimeout(r, 600));
 
           const canvasImg = await html2canvas(document.getElementById('paperSheet'), {
             scale: 2,
             useCORS: true,
             allowTaint: true,
-            logging: false
+            logging: false,
+            windowWidth: SHEET_WIDTH,
+            windowHeight: SHEET_HEIGHT
           });
 
-          if (i > 0) pdf.addPage([SHEET_WIDTH, SHEET_HEIGHT], 'landscape');
+          if (i > 0) pdf.addPage([SHEET_WIDTH, SHEET_HEIGHT], SHEET_WIDTH >= SHEET_HEIGHT ? 'landscape' : 'portrait');
           const imgData = canvasImg.toDataURL('image/jpeg', 0.95);
           pdf.addImage(imgData, 'JPEG', 0, 0, SHEET_WIDTH, SHEET_HEIGHT, undefined, 'FAST');
 
           canvasImg.width = 0;
           canvasImg.height = 0;
-          await new Promise(r => setTimeout(r, 80));
         }
 
-        progressText.textContent = 'Finalizando arquivo PDF...';
-        const arrayBuffer = pdf.output('arraybuffer');
-        const pdfBlob = new Blob([arrayBuffer], { type: 'application/pdf' });
-        
+        progressText.textContent = 'Finalizando PDF...';
+        const pdfBlob = pdf.output('blob');
+        await gravarNoOPFS(fileName, pdfBlob);
+
         overlay.classList.remove('flex');
         overlay.classList.add('hidden');
 
-        await salvarOuCompartilharArquivo(pdfBlob, fileName, 'application/pdf', true);
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 2000);
 
       } catch (err) {
         console.error('Erro ao gerar PDF:', err);
@@ -1395,6 +1316,7 @@
         overlay.classList.add('hidden');
         showModal('Erro', 'Não foi possível gerar o PDF.');
       } finally {
+        paperWrapper.style.transform = originalTransform;
         albumState.currentPageIndex = origIdx;
         document.body.classList.remove('exporting-mode');
         renderAll();
